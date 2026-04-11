@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from datetime import datetime
-from models import CaseStatus, VoucherStatus
+from models import CaseStatus, VoucherStatus, SlotStatus, AppointmentStatus, CareStatus
 
 
 # --- Request bodies ---
@@ -73,3 +73,100 @@ class DashboardResponse(BaseModel):
     total_xrp_locked: int
     total_xrp_released: int
     cases: list[DashboardCase]
+    
+# --- Clinic schemas ---
+
+class ClinicRegisterRequest(BaseModel):
+    name: str
+    doctor_name: str
+    address: str
+    city: str
+    xrpl_wallet_address: Optional[str] = None
+
+
+class ClinicResponse(BaseModel):
+    id: str
+    name: str
+    doctor_name: str
+    address: str
+    city: str
+    created_at: datetime
+
+
+class SlotCreateRequest(BaseModel):
+    slot_datetime: datetime   # ISO 8601, UTC
+
+
+class SlotResponse(BaseModel):
+    id: str
+    clinic_id: str
+    slot_datetime: datetime
+    status: SlotStatus
+
+
+class ClinicWithSlotsResponse(BaseModel):
+    id: str
+    name: str
+    doctor_name: str
+    address: str
+    city: str
+    available_slots: List[SlotResponse]
+
+
+# --- Patient case schemas ---
+
+class CreatePatientCaseRequest(BaseModel):
+    email: str
+    phone: Optional[str] = None
+    country_of_origin: str
+
+
+class CreatePatientCaseResponse(BaseModel):
+    case_id: str
+    access_code: str   # shown to user once — they use this to look up their case
+    care_status: CareStatus
+    message: str
+
+
+class PatientCaseStatusResponse(BaseModel):
+    case_id: str
+    care_status: CareStatus
+    appointment: Optional[Dict[str, Any]]   # simplified appointment info, None if not booked
+
+
+# --- Appointment schemas ---
+
+class BookAppointmentRequest(BaseModel):
+    access_code: str    # patient uses this instead of auth
+    slot_id: str
+
+
+class AppointmentResponse(BaseModel):
+    id: str
+    patient_case_id: str
+    slot_id: str
+    clinic_name: str
+    slot_datetime: datetime
+    status: AppointmentStatus
+    created_at: datetime
+
+
+class UpdateAppointmentRequest(BaseModel):
+    access_code: str
+    action: str   # "reschedule" | "cancel"
+    new_slot_id: Optional[str] = None   # required if action == "reschedule"
+
+
+# --- Proof schemas ---
+
+class SubmitProofRequest(BaseModel):
+    appointment_id: str
+    rpps_invoice_number: str
+    total_cost_eur: int   # in EUR cents
+
+
+class SubmitProofResponse(BaseModel):
+    proof_id: str
+    appointment_id: str
+    escrow_tx_hash: Optional[str]
+    message: str

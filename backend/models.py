@@ -49,3 +49,107 @@ class Voucher(Base):
     redeemed_at = Column(DateTime, nullable=True)
 
     funding_case = relationship("FundingCase", back_populates="voucher")
+    
+    
+class SlotStatus(str, enum.Enum):
+    AVAILABLE = "available"
+    BOOKED = "booked"
+    CANCELLED = "cancelled"
+
+
+class AppointmentStatus(str, enum.Enum):
+    PENDING = "pending"               # booked but not yet confirmed by clinic
+    CONFIRMED = "confirmed"           # clinic confirmed
+    RESCHEDULED = "rescheduled"
+    CANCELLED_BY_USER = "cancelled_by_user"
+    CANCELLED_BY_CLINIC = "cancelled_by_clinic"
+    COMPLETED = "completed"           # proof submitted, escrow released
+
+
+class CareStatus(str, enum.Enum):
+    CREATED = "created"
+    APPOINTMENT_REQUESTED = "appointment_requested"
+    APPOINTMENT_CONFIRMED = "appointment_confirmed"
+    CARE_COMPLETED = "care_completed"
+    PROOF_SUBMITTED = "proof_submitted"
+    PAYMENT_RELEASED = "payment_released"
+
+
+class Clinic(Base):
+    __tablename__ = "clinics"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String, nullable=False)
+    doctor_name = Column(String, nullable=False)
+    address = Column(String, nullable=False)
+    city = Column(String, nullable=False)
+    # xrpl_wallet_address is not used for payment routing in MVP
+    # (clinic wallet is fixed in .env). Stored for display only.
+    xrpl_wallet_address = Column(String, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    slots = relationship("ClinicSlot", back_populates="clinic")
+
+
+class ClinicSlot(Base):
+    __tablename__ = "clinic_slots"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    clinic_id = Column(String, ForeignKey("clinics.id"), nullable=False)
+    slot_datetime = Column(DateTime, nullable=False)   # UTC
+    status = Column(SAEnum(SlotStatus), nullable=False, default=SlotStatus.AVAILABLE)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    clinic = relationship("Clinic", back_populates="slots")
+    appointment = relationship("Appointment", back_populates="slot", uselist=False)
+
+
+class PatientCase(Base):
+    __tablename__ = "patient_cases"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    # access_code: shown to user after case creation, used to look up their case.
+    # This replaces magic link for hackathon. Format: 8 random uppercase alphanumeric chars.
+    access_code = Column(String, nullable=False, unique=True)
+    email = Column(String, nullable=False)
+    phone = Column(String, nullable=True)
+    country_of_origin = Column(String, nullable=False)
+    care_status = Column(SAEnum(CareStatus), nullable=False, default=CareStatus.CREATED)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    appointment = relationship("Appointment", back_populates="patient_case", uselist=False)
+
+
+class Appointment(Base):
+    __tablename__ = "appointments"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    patient_case_id = Column(String, ForeignKey("patient_cases.id"), nullable=False, unique=True)
+    clinic_slot_id = Column(String, ForeignKey("clinic_slots.id"), nullable=False)
+    # funding_case_id: set when funder creates escrow for this appointment.
+    # Null until funder acts. In hackathon demo, funder creates escrow independently
+    # and links it here manually or via the fund endpoint.
+    funding_case_id = Column(String, ForeignKey("funding_cases.id"), nullable=True)
+    status = Column(SAEnum(AppointmentStatus), nullable=False, default=AppointmentStatus.PENDING)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    patient_case = relationship("PatientCase", back_populates="appointment")
+    slot = relationship("ClinicSlot", back_populates="appointment")
+    funding_case = relationship("FundingCase")
+    proof = relationship("CompletionProof", back_populates="appointment", uselist=False)
+
+
+class CompletionProof(Base):
+    __tablename__ = "completion_proofs"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    appointment_id = Column(String, ForeignKey("appointments.id"), nullable=False, unique=True)
+    rpps_invoice_number = Column(String, nullable=False)
+    total_cost_eur = Column(Integer, nullable=False)   # in EUR cents to avoid float
+    pdf_filename = Column(String, nullable=True)       # filename stored in uploads/ directory
+    submitted_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    # escrow_tx_hash: populated after successful EscrowFinish
+    escrow_tx_hash = Column(String, nullable=True)
+
+    appointment = relationship("Appointment", back_populates="proof")
