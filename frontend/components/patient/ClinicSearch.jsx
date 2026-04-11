@@ -50,10 +50,6 @@ const MOCK_CLINICS = [
 export default function ClinicSearch({
   searchTerm,
   setSearchTerm,
-  preferredDate,
-  setPreferredDate,
-  preferredTime,
-  setPreferredTime,
   selectedClinic,
   onSelectClinic,
   onBack,
@@ -87,7 +83,7 @@ export default function ClinicSearch({
           </p>
         </div>
 
-        <div className="grid gap-4 rounded-3xl border border-rose-100 bg-[linear-gradient(180deg,_#fff9fb_0%,_#ffffff_100%)] p-5 md:grid-cols-3">
+        <div className="grid gap-4 rounded-3xl border border-rose-100 bg-[linear-gradient(180deg,_#fff9fb_0%,_#ffffff_100%)] p-5">
           <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
             Location
             <input
@@ -95,26 +91,6 @@ export default function ClinicSearch({
               onChange={(event) => setSearchTerm(event.target.value)}
               className="rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
               placeholder="City or country"
-            />
-          </label>
-
-          <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
-            Preferred date
-            <input
-              type="date"
-              value={preferredDate}
-              onChange={(event) => setPreferredDate(event.target.value)}
-              className="rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
-            />
-          </label>
-
-          <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
-            Preferred time
-            <input
-              type="time"
-              value={preferredTime}
-              onChange={(event) => setPreferredTime(event.target.value)}
-              className="rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
             />
           </label>
         </div>

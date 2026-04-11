@@ -55,8 +55,6 @@ export default function PatientPage() {
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [lookupCode, setLookupCode] = useState("");
   const [city, setCity] = useState("");
-  const [preferredDate, setPreferredDate] = useState("");
-  const [preferredTime, setPreferredTime] = useState("");
   const [selectedMockClinic, setSelectedMockClinic] = useState(null);
   const [accessCode, setAccessCode] = useState("");
   const [caseInfo, setCaseInfo] = useState(null);
@@ -77,8 +75,6 @@ export default function PatientPage() {
     setFormData(INITIAL_FORM);
     setLookupCode("");
     setCity("");
-    setPreferredDate("");
-    setPreferredTime("");
     setSelectedMockClinic(null);
     setAccessCode("");
     setCaseInfo(null);
@@ -297,10 +293,6 @@ export default function PatientPage() {
           <ClinicSearch
             searchTerm={city}
             setSearchTerm={setCity}
-            preferredDate={preferredDate}
-            setPreferredDate={setPreferredDate}
-            preferredTime={preferredTime}
-            setPreferredTime={setPreferredTime}
             selectedClinic={selectedMockClinic}
             onSelectClinic={handleSelectMockClinic}
             onBack={() => setMode("selector")}

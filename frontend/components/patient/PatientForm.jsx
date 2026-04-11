@@ -45,7 +45,10 @@ function Field({ label, children, className = "" }) {
     <label
       className={`flex flex-col gap-2 text-sm font-medium text-slate-700 ${className}`}
     >
-      {label}
+      <span>
+        {label}
+        <span className="ml-1 text-rose-700">*</span>
+      </span>
       {children}
     </label>
   );
