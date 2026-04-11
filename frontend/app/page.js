@@ -27,14 +27,14 @@ const PORTALS = [
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(153,53,86,0.12),_transparent_34%),linear-gradient(180deg,_#fff8fa_0%,_#f8fafc_52%,_#ffffff_100%)] px-4 py-10 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(153,53,86,0.12),_transparent_34%),linear-gradient(180deg,_#fff8fa_0%,_#f8fafc_52%,_#ffffff_100%)] px-4 py-10 pt-14 sm:px-6 sm:pt-10 lg:px-8">
       <div className="mx-auto flex max-w-6xl flex-col gap-8">
-        <section className="overflow-hidden rounded-[2rem] border border-white/70 bg-white/85 px-6 py-10 shadow-[0_24px_60px_rgba(148,163,184,0.14)] backdrop-blur sm:px-10 sm:py-14">
+        <section className="overflow-hidden rounded-[2rem] border border-white/70 bg-white/85 px-5 py-8 shadow-[0_24px_60px_rgba(148,163,184,0.14)] backdrop-blur sm:px-10 sm:py-14">
           <div className="flex flex-col gap-8">
             <div className="flex flex-col gap-5">
               <BrandLogo size="lg" />
               <div>
-                <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
+                <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
                   Safe, confidential funding for women seeking care across borders.
                 </h1>
                 <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg">
@@ -67,9 +67,7 @@ export default function HomePage() {
 
                     <div className="inline-flex items-center gap-2 text-sm font-semibold text-white">
                       Enter portal
-                      <span className="transition group-hover:translate-x-1">
-                        →
-                      </span>
+                      <span className="transition group-hover:translate-x-1">-&gt;</span>
                     </div>
                   </div>
                 </Link>

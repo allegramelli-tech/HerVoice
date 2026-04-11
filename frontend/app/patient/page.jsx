@@ -274,7 +274,7 @@ export default function PatientPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(153,53,86,0.12),_transparent_35%),linear-gradient(180deg,_#fff8fa_0%,_#f8fafc_55%,_#ffffff_100%)] px-4 py-10 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(153,53,86,0.12),_transparent_35%),linear-gradient(180deg,_#fff8fa_0%,_#f8fafc_55%,_#ffffff_100%)] px-4 py-10 pt-14 sm:px-6 sm:pt-10 lg:px-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
         {mode === "selector" ? (
           <StepSelector onSelect={handleSelectMode} />
@@ -330,9 +330,9 @@ export default function PatientPage() {
         ) : null}
 
         {accessCode ? (
-          <section className="rounded-3xl border border-white/70 bg-white p-6 shadow-[0_24px_60px_rgba(148,163,184,0.14)] sm:p-8">
+          <section className="rounded-3xl border border-white/70 bg-white p-5 shadow-[0_24px_60px_rgba(148,163,184,0.14)] sm:p-8">
             <div className="flex flex-col gap-6">
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                 <div>
                   <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
                     Continue your care journey
@@ -474,13 +474,13 @@ export default function PatientPage() {
                             : "border-slate-200 bg-white hover:border-slate-300"
                         }`}
                       >
-                        <div className="text-lg font-semibold text-slate-900">
+                        <div className="break-words text-lg font-semibold text-slate-900">
                           {clinic.name}
                         </div>
-                        <div className="mt-2 text-sm text-slate-600">
+                        <div className="mt-2 break-words text-sm text-slate-600">
                           {clinic.doctor_name}
                         </div>
-                        <div className="mt-3 text-sm text-slate-500">
+                        <div className="mt-3 break-words text-sm text-slate-500">
                           {clinic.address}
                         </div>
                         <div className="mt-1 text-sm text-slate-500">
@@ -501,13 +501,13 @@ export default function PatientPage() {
                     {selectedClinic ? (
                       <div className="mt-5 flex flex-col gap-4">
                         <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                          <div className="text-base font-semibold text-slate-900">
+                          <div className="break-words text-base font-semibold text-slate-900">
                             {selectedClinic.name}
                           </div>
-                          <div className="mt-1 text-sm text-slate-600">
+                          <div className="mt-1 break-words text-sm text-slate-600">
                             {selectedClinic.doctor_name}
                           </div>
-                          <div className="mt-2 text-sm text-slate-500">
+                          <div className="mt-2 break-words text-sm text-slate-500">
                             {selectedClinic.address}, {selectedClinic.city}
                           </div>
                         </div>

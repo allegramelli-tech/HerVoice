@@ -37,10 +37,10 @@ export default function ClinicInterface({
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,_#fff8fa_0%,_#f8fafc_48%,_#ffffff_100%)]">
       <header className="border-b border-white/70 bg-white/85 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col items-start gap-4 px-4 py-5 pr-14 sm:px-6 sm:pr-16 lg:px-8 lg:pr-8 min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between">
           <BrandLogo />
-          <div className="flex items-center gap-4">
-            <div className="text-right">
+          <div className="flex w-full flex-col items-start gap-3 min-[480px]:w-auto min-[480px]:flex-row min-[480px]:items-center min-[480px]:gap-4">
+            <div className="text-left min-[480px]:text-right">
               <div className="text-sm font-semibold text-slate-900">
                 Berlin Partner Clinic
               </div>
@@ -136,7 +136,7 @@ export default function ClinicInterface({
                     <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                       Voucher ID
                     </div>
-                    <div className="mt-2 font-mono text-slate-900">
+                    <div className="mt-2 break-all font-mono text-slate-900">
                       {verification.voucher_id}
                     </div>
                   </div>
@@ -160,7 +160,7 @@ export default function ClinicInterface({
                     <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                       Case ID
                     </div>
-                    <div className="mt-2 font-mono text-slate-900">
+                    <div className="mt-2 break-all font-mono text-slate-900">
                       {verification.case_id || "Unavailable"}
                     </div>
                   </div>
@@ -183,7 +183,7 @@ export default function ClinicInterface({
                     <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
                       Voucher ID
                     </div>
-                    <div className="mt-2 font-mono text-emerald-900">
+                    <div className="mt-2 break-all font-mono text-emerald-900">
                       {confirmResult.voucher_id}
                     </div>
                   </div>
@@ -230,7 +230,63 @@ export default function ClinicInterface({
             ) : null}
 
             <div className="overflow-hidden rounded-3xl border border-slate-100">
-              <div className="overflow-x-auto">
+              <div className="space-y-3 px-4 py-4 md:hidden">
+                {incomingRequests.length ? (
+                  incomingRequests.map((caseItem) => (
+                    <button
+                      key={caseItem.case_id}
+                      type="button"
+                      onClick={() => {
+                        setVoucherFromCase(caseItem.voucher_id || "");
+                        setVerification(null);
+                        setConfirmResult(null);
+                        setActionError("");
+                      }}
+                      className="w-full rounded-2xl border border-slate-100 bg-white p-4 text-left transition hover:bg-rose-50/70"
+                    >
+                      <div className="flex flex-col gap-3">
+                        <div>
+                          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                            Anonymous ID
+                          </div>
+                          <div className="mt-1 break-all font-mono text-sm text-slate-900">
+                            {formatAnonymousId(caseItem.case_id)}
+                          </div>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <div>
+                            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                              Voucher
+                            </div>
+                            <div className="mt-1 break-all font-mono text-xs text-slate-600">
+                              {caseItem.voucher_id}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                              Amount
+                            </div>
+                            <div className="mt-1 text-sm font-medium text-slate-900">
+                              {caseItem.amount_xrp} XRP
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+                            {getUiStatus(caseItem)}
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  ))
+                ) : (
+                  <div className="px-2 py-6 text-center text-sm text-slate-500">
+                    No incoming requests available yet.
+                  </div>
+                )}
+              </div>
+
+              <div className="hidden overflow-x-auto md:block">
                 <table className="min-w-full divide-y divide-slate-100 text-left">
                   <thead className="bg-slate-50">
                     <tr className="text-xs uppercase tracking-[0.18em] text-slate-400">

@@ -10,8 +10,8 @@ export default function ClinicLogin({
   onSubmit,
 }) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,_#fff7fa_0%,_#f8fafc_100%)] px-4 py-10">
-      <div className="w-full max-w-md rounded-3xl border border-white/70 bg-white p-8 shadow-[0_24px_60px_rgba(148,163,184,0.16)]">
+    <main className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,_#fff7fa_0%,_#f8fafc_100%)] px-4 py-10 pt-14 sm:pt-10">
+      <div className="w-full max-w-md rounded-3xl border border-white/70 bg-white p-6 shadow-[0_24px_60px_rgba(148,163,184,0.16)] sm:p-8">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-4">
             <BrandLogo />

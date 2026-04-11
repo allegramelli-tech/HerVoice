@@ -94,10 +94,10 @@ export default function FunderDashboard({
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,_#fff8fa_0%,_#f8fafc_48%,_#ffffff_100%)]">
       <header className="border-b border-white/70 bg-white/85 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col items-start gap-4 px-4 py-5 pr-14 sm:px-6 sm:pr-16 lg:px-8 lg:pr-8 min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between">
           <BrandLogo />
-          <div className="flex items-center gap-4">
-            <div className="text-right">
+          <div className="flex w-full flex-col items-start gap-3 min-[480px]:w-auto min-[480px]:flex-row min-[480px]:items-center min-[480px]:gap-4">
+            <div className="text-left min-[480px]:text-right">
               <div className="text-sm font-semibold text-slate-900">
                 HerVoice Funding Network
               </div>
@@ -536,7 +536,72 @@ export default function FunderDashboard({
                     </div>
                   </div>
 
-                  <div className="overflow-x-auto">
+                  <div className="space-y-3 px-4 py-4 md:hidden">
+                    {cases.map((caseItem) => {
+                      const status = getUiStatus(caseItem);
+                      const clinicConfirmed =
+                        caseItem.case_status === "released" ||
+                        caseItem.voucher_status === "redeemed";
+
+                      return (
+                        <div
+                          key={caseItem.case_id}
+                          className="rounded-2xl border border-slate-100 bg-white p-4"
+                        >
+                          <div className="flex flex-col gap-3">
+                            <div>
+                              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                                Anonymous ID
+                              </div>
+                              <div className="mt-1 break-all font-mono text-sm text-slate-900">
+                                {formatAnonymousId(caseItem.case_id)}
+                              </div>
+                            </div>
+
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              <div>
+                                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                                  Voucher
+                                </div>
+                                <div className="mt-1 break-all font-mono text-xs text-slate-600">
+                                  {caseItem.voucher_id || "Not issued"}
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                                  Amount
+                                </div>
+                                <div className="mt-1 text-sm font-medium text-slate-900">
+                                  {caseItem.amount_xrp} EUR
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2">
+                              <span
+                                className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${getStatusClasses(
+                                  status
+                                )}`}
+                              >
+                                {formatStatusLabel(status)}
+                              </span>
+                              <span
+                                className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${
+                                  clinicConfirmed
+                                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                    : "border-slate-200 bg-slate-50 text-slate-600"
+                                }`}
+                              >
+                                {clinicConfirmed ? "Clinic confirmed" : "Clinic pending"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="hidden overflow-x-auto md:block">
                     <table className="min-w-full divide-y divide-slate-100 text-left">
                       <thead className="bg-white">
                         <tr className="text-xs uppercase tracking-[0.18em] text-slate-400">

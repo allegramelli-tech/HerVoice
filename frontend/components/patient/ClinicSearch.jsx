@@ -14,7 +14,7 @@ export default function ClinicSearch({
   onBack,
 }) {
   return (
-    <section className="rounded-3xl border border-white/70 bg-white p-8 shadow-[0_24px_60px_rgba(148,163,184,0.14)]">
+    <section className="rounded-3xl border border-white/70 bg-white p-5 shadow-[0_24px_60px_rgba(148,163,184,0.14)] sm:p-8">
       <div className="flex flex-col gap-6">
         <button
           type="button"
@@ -25,7 +25,7 @@ export default function ClinicSearch({
         </button>
 
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
             Find a clinic near you
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
@@ -84,16 +84,16 @@ export default function ClinicSearch({
               >
                 <div className="flex flex-col gap-5">
                   <div>
-                    <div className="text-lg font-semibold text-slate-900">
+                    <div className="break-words text-lg font-semibold text-slate-900">
                       {clinic.name}
                     </div>
                     <div className="mt-2 text-sm text-slate-600">
                       {clinic.city}
                     </div>
-                    <div className="mt-1 text-sm text-slate-500">
+                    <div className="mt-1 break-words text-sm text-slate-500">
                       {clinic.address}
                     </div>
-                    <div className="mt-1 text-sm text-slate-500">
+                    <div className="mt-1 break-words text-sm text-slate-500">
                       Doctor: {clinic.doctor_name}
                     </div>
                   </div>
@@ -101,7 +101,7 @@ export default function ClinicSearch({
                   <button
                     type="button"
                     onClick={() => onSelectClinic(clinic)}
-                    className="inline-flex w-fit items-center justify-center rounded-full px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+                    className="inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 sm:w-fit"
                     style={{ backgroundColor: BRAND_COLOR }}
                   >
                     {isSelected ? "Selected clinic" : "Select this clinic"}

@@ -70,14 +70,14 @@ export default function PatientForm({
 }) {
   if (accessCode) {
     return (
-      <section className="rounded-3xl border border-rose-100 bg-white p-8 shadow-[0_24px_60px_rgba(148,163,184,0.14)]">
+      <section className="rounded-3xl border border-rose-100 bg-white p-5 shadow-[0_24px_60px_rgba(148,163,184,0.14)] sm:p-8">
         <div className="flex flex-col gap-6">
           <div className="inline-flex w-fit items-center rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">
             Request received
           </div>
 
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
               Your request was submitted successfully.
             </h1>
             <p className="mt-3 text-base text-slate-600">
@@ -133,9 +133,9 @@ export default function PatientForm({
   return (
     <form
       onSubmit={onSubmit}
-      className="grid gap-6 rounded-3xl border border-white/70 bg-white p-6 shadow-[0_24px_60px_rgba(148,163,184,0.14)] sm:p-8"
+      className="grid gap-6 rounded-3xl border border-white/70 bg-white p-5 shadow-[0_24px_60px_rgba(148,163,184,0.14)] sm:p-8"
     >
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
             Complete your support request
@@ -158,19 +158,19 @@ export default function PatientForm({
           <div className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">
             Selected clinic
           </div>
-          <div className="mt-2 text-lg font-semibold text-slate-900">
+          <div className="mt-2 break-words text-lg font-semibold text-slate-900">
             {selectedClinic.name}
           </div>
           <div className="mt-1 text-sm text-slate-600">
             {selectedClinic.city}
           </div>
-          <div className="mt-1 text-sm text-slate-500">
+          <div className="mt-1 break-words text-sm text-slate-500">
             {selectedClinic.address}
           </div>
         </section>
       ) : null}
 
-      <section className="rounded-3xl border border-slate-100 bg-white p-6">
+      <section className="rounded-3xl border border-slate-100 bg-white p-5 sm:p-6">
         <div className="mb-5">
           <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
             Personal information
@@ -237,7 +237,7 @@ export default function PatientForm({
         </div>
       </section>
 
-      <section className="rounded-3xl border border-slate-100 bg-white p-6">
+      <section className="rounded-3xl border border-slate-100 bg-white p-5 sm:p-6">
         <div className="mb-5">
           <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
             Health insurance
