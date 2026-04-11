@@ -74,6 +74,16 @@ function formatDateTime(value) {
   }).format(date);
 }
 
+function formatCompactId(value) {
+  if (!value) return "Unavailable";
+
+  if (value.length <= 18) {
+    return value;
+  }
+
+  return `${value.slice(0, 8)}...${value.slice(-6)}`;
+}
+
 export default function FunderDashboard({
   onSignOut,
   isLoading,
@@ -399,6 +409,9 @@ export default function FunderDashboard({
                           const isSelected =
                             selectedAppointmentId === appointment.appointment_id;
                           const isLinked = Boolean(appointment.funding_case_id);
+                          const wasJustLinked =
+                            Boolean(linkSuccess) &&
+                            appointment.funding_case_id === selectedFundingCaseId;
 
                           return (
                             <button
@@ -410,9 +423,11 @@ export default function FunderDashboard({
                                 )
                               }
                               className={`w-full rounded-3xl border px-4 py-4 text-left transition ${
-                                isSelected
-                                  ? "border-rose-300 bg-rose-50"
-                                  : "border-slate-200 bg-white hover:border-slate-300"
+                                wasJustLinked
+                                  ? "border-emerald-300 bg-emerald-50/70 shadow-[0_12px_30px_rgba(16,185,129,0.10)]"
+                                  : isSelected
+                                    ? "border-rose-300 bg-rose-50"
+                                    : "border-slate-200 bg-white hover:border-slate-300"
                               }`}
                             >
                               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -444,11 +459,42 @@ export default function FunderDashboard({
                                 </div>
                               </div>
 
-                              <div className="mt-3 text-xs text-slate-500">
-                                {isLinked
-                                  ? `Linked funding case: ${appointment.funding_case_id}`
-                                  : "This appointment still needs a funding case."}
-                              </div>
+                              {isLinked ? (
+                                <div className="mt-3 rounded-2xl border border-emerald-100 bg-white/80 px-4 py-3">
+                                  {wasJustLinked ? (
+                                    <div className="mb-3 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                                      Funding linked successfully
+                                    </div>
+                                  ) : null}
+
+                                  <div className="flex flex-wrap items-start justify-between gap-3">
+                                    <div>
+                                      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                                        Linked funding case
+                                      </div>
+                                      <div className="mt-2 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                                        {formatAnonymousId(appointment.funding_case_id)}
+                                      </div>
+                                    </div>
+
+                                    <div className="min-w-0 flex-1 text-left sm:text-right">
+                                      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                                        Case reference
+                                      </div>
+                                      <div
+                                        className="mt-2 break-all font-mono text-xs text-slate-600"
+                                        title={appointment.funding_case_id}
+                                      >
+                                        {formatCompactId(appointment.funding_case_id)}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="mt-3 text-xs text-slate-500">
+                                  This appointment still needs a funding case.
+                                </div>
+                              )}
                             </button>
                           );
                         })}
