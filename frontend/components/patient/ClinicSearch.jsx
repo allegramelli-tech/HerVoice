@@ -113,7 +113,7 @@ export default function ClinicSearch({
 
           {!clinics.length && !isLoading ? (
             <div className="rounded-3xl border border-dashed border-slate-200 px-6 py-12 text-center text-sm text-slate-500 lg:col-span-2">
-              Search for a city to load clinics from the backend.
+              Locate a trusted clinic in your area.
             </div>
           ) : null}
         </div>
