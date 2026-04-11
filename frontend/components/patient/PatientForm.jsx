@@ -109,7 +109,10 @@ export default function PatientForm({
                   Preferred clinic
                 </div>
                 <div className="mt-2 text-sm font-medium text-slate-900">
-                  {selectedClinic.name}, {selectedClinic.city}, {selectedClinic.country}
+                  {selectedClinic.name}, {selectedClinic.city}
+                </div>
+                <div className="mt-1 text-sm text-slate-500">
+                  {selectedClinic.address}
                 </div>
               </div>
             ) : null}
@@ -159,10 +162,10 @@ export default function PatientForm({
             {selectedClinic.name}
           </div>
           <div className="mt-1 text-sm text-slate-600">
-            {selectedClinic.city}, {selectedClinic.country}
+            {selectedClinic.city}
           </div>
           <div className="mt-1 text-sm text-slate-500">
-            Estimated distance: {selectedClinic.distance}
+            {selectedClinic.address}
           </div>
         </section>
       ) : null}

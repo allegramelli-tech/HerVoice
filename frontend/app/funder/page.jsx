@@ -31,6 +31,18 @@ export default function FunderPage() {
   const [dashboard, setDashboard] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [dashboardError, setDashboardError] = useState("");
+  const [clinics, setClinics] = useState([]);
+  const [clinicsError, setClinicsError] = useState("");
+  const [isLoadingClinics, setIsLoadingClinics] = useState(false);
+  const [selectedClinicId, setSelectedClinicId] = useState("");
+  const [appointments, setAppointments] = useState([]);
+  const [appointmentsError, setAppointmentsError] = useState("");
+  const [isLoadingAppointments, setIsLoadingAppointments] = useState(false);
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState("");
+  const [selectedFundingCaseId, setSelectedFundingCaseId] = useState("");
+  const [linkError, setLinkError] = useState("");
+  const [linkSuccess, setLinkSuccess] = useState("");
+  const [isLinking, setIsLinking] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [amountInput, setAmountInput] = useState("5");
   const [createError, setCreateError] = useState("");
@@ -66,6 +78,78 @@ export default function FunderPage() {
 
     loadDashboard();
   }, [isLoggedIn]);
+
+  async function loadClinics() {
+    setIsLoadingClinics(true);
+    setClinicsError("");
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/clinics`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Unable to load clinics.");
+      }
+
+      setClinics(data);
+    } catch (error) {
+      setClinicsError(error.message || "Unable to load clinics right now.");
+    } finally {
+      setIsLoadingClinics(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      return;
+    }
+
+    loadClinics();
+  }, [isLoggedIn]);
+
+  async function loadClinicAppointments(clinicId) {
+    if (!clinicId) {
+      setAppointments([]);
+      setSelectedAppointmentId("");
+      return;
+    }
+
+    setIsLoadingAppointments(true);
+    setAppointmentsError("");
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/clinic-admin/${clinicId}/appointments`
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Unable to load appointments.");
+      }
+
+      setAppointments(data);
+    } catch (error) {
+      setAppointments([]);
+      setAppointmentsError(
+        error.message || "Unable to load appointments right now."
+      );
+    } finally {
+      setIsLoadingAppointments(false);
+    }
+  }
+
+  async function handleClinicChange(event) {
+    const clinicId = event.target.value;
+
+    setSelectedClinicId(clinicId);
+    setAppointments([]);
+    setSelectedAppointmentId("");
+    setAppointmentsError("");
+    setLinkError("");
+    setLinkSuccess("");
+
+    await loadClinicAppointments(clinicId);
+  }
 
   const groupedCases = useMemo(() => {
     const cases = dashboard?.cases || [];
@@ -122,7 +206,7 @@ export default function FunderPage() {
     const amount = Number(amountInput);
 
     if (!Number.isInteger(amount) || amount < 1 || amount > 1000) {
-      setCreateError("Enter a whole XRP amount between 1 and 1000.");
+      setCreateError("Enter a whole EUR amount between 1 and 1000.");
       return;
     }
 
@@ -145,6 +229,7 @@ export default function FunderPage() {
       }
 
       setCreatedCase(data);
+      setSelectedFundingCaseId(data.case_id);
       await loadDashboard();
     } catch (error) {
       setCreateError(
@@ -154,6 +239,68 @@ export default function FunderPage() {
       setIsCreating(false);
     }
   }
+
+  async function handleLinkFunding(event) {
+    event.preventDefault();
+    setLinkError("");
+    setLinkSuccess("");
+
+    if (!selectedClinicId) {
+      setLinkError("Please choose a clinic first.");
+      return;
+    }
+
+    if (!selectedAppointmentId) {
+      setLinkError("Please select an appointment to continue.");
+      return;
+    }
+
+    if (!selectedFundingCaseId) {
+      setLinkError("Please choose a funding case to link.");
+      return;
+    }
+
+    setIsLinking(true);
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/clinic-admin/appointments/${selectedAppointmentId}/link-funding?funding_case_id=${encodeURIComponent(
+          selectedFundingCaseId
+        )}`,
+        {
+          method: "PATCH",
+        }
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        const errorDetail =
+          typeof data.detail === "string"
+            ? data.detail
+            : data.detail?.detail || data.message;
+
+        throw new Error(errorDetail || "Unable to link funding case.");
+      }
+
+      setLinkSuccess(data.message || "Funding case linked successfully.");
+      setSelectedAppointmentId("");
+      await Promise.all([loadDashboard(), loadClinicAppointments(selectedClinicId)]);
+    } catch (error) {
+      setLinkError(error.message || "Unable to link funding case right now.");
+    } finally {
+      setIsLinking(false);
+    }
+  }
+
+  const selectedClinic = useMemo(() => {
+    return clinics.find((clinic) => clinic.id === selectedClinicId) || null;
+  }, [clinics, selectedClinicId]);
+
+  const linkableFundingCases = useMemo(() => {
+    return (dashboard?.cases || []).filter(
+      (caseItem) => caseItem.case_status !== "released"
+    );
+  }, [dashboard]);
 
   if (!isLoggedIn) {
     return (
@@ -177,9 +324,27 @@ export default function FunderPage() {
       createError={createError}
       dashboard={dashboard}
       confirmedCount={confirmedCount}
+      clinics={clinics}
+      clinicsError={clinicsError}
+      isLoadingClinics={isLoadingClinics}
+      selectedClinicId={selectedClinicId}
+      selectedClinic={selectedClinic}
+      appointments={appointments}
+      appointmentsError={appointmentsError}
+      isLoadingAppointments={isLoadingAppointments}
+      selectedAppointmentId={selectedAppointmentId}
+      setSelectedAppointmentId={setSelectedAppointmentId}
+      selectedFundingCaseId={selectedFundingCaseId}
+      setSelectedFundingCaseId={setSelectedFundingCaseId}
+      linkableFundingCases={linkableFundingCases}
+      linkError={linkError}
+      linkSuccess={linkSuccess}
+      isLinking={isLinking}
       amountInput={amountInput}
       setAmountInput={setAmountInput}
       onCreateFundingCase={handleCreateFundingCase}
+      onClinicChange={handleClinicChange}
+      onLinkFunding={handleLinkFunding}
       isCreating={isCreating}
       createdCase={createdCase}
       statusFilter={statusFilter}

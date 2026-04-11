@@ -3,4 +3,5 @@ uvicorn[standard]==0.29.0
 xrpl-py==2.6.0
 SQLAlchemy==2.0.30
 python-dotenv==1.0.1
+python-multipart==0.0.9
 httpx==0.24.1

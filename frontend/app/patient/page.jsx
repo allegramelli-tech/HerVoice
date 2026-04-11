@@ -266,9 +266,10 @@ export default function PatientPage() {
     setMode(nextMode);
   }
 
-  function handleSelectMockClinic(clinic) {
+  async function handleSelectMockClinic(clinic) {
     setSelectedMockClinic(clinic);
     setCity(clinic.city);
+    await handleSelectClinic(clinic.id);
     setMode("support");
   }
 
@@ -293,6 +294,10 @@ export default function PatientPage() {
           <ClinicSearch
             searchTerm={city}
             setSearchTerm={setCity}
+            clinics={clinics}
+            onSearch={handleSearchClinics}
+            isLoading={isLoadingClinics}
+            errorMessage={errorMessage}
             selectedClinic={selectedMockClinic}
             onSelectClinic={handleSelectMockClinic}
             onBack={() => setMode("selector")}

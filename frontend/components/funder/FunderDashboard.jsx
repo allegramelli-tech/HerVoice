@@ -60,6 +60,30 @@ function DashboardSpinner({ text = "Loading dashboard data..." }) {
   );
 }
 
+function formatAppointmentStatus(status) {
+  if (!status) return "Unknown";
+
+  return status
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function formatDateTime(value) {
+  if (!value) return "Date unavailable";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+}
+
 export default function FunderDashboard({
   onSignOut,
   isLoading,
@@ -67,9 +91,27 @@ export default function FunderDashboard({
   createError,
   dashboard,
   confirmedCount,
+  clinics,
+  clinicsError,
+  isLoadingClinics,
+  selectedClinicId,
+  selectedClinic,
+  appointments,
+  appointmentsError,
+  isLoadingAppointments,
+  selectedAppointmentId,
+  setSelectedAppointmentId,
+  selectedFundingCaseId,
+  setSelectedFundingCaseId,
+  linkableFundingCases,
+  linkError,
+  linkSuccess,
+  isLinking,
   amountInput,
   setAmountInput,
   onCreateFundingCase,
+  onClinicChange,
+  onLinkFunding,
   isCreating,
   createdCase,
   statusFilter,
@@ -123,15 +165,15 @@ export default function FunderDashboard({
                 Funding overview
               </h2>
               <p className="mt-1 text-sm text-slate-500">
-                XRPL funding and voucher activity across the network.
+                Funding and voucher activity across the network.
               </p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               {[
                 ["Total cases", dashboard?.total_cases ?? 0],
-                ["XRP locked", `${dashboard?.total_xrp_locked ?? 0} XRP`],
-                ["XRP released", `${dashboard?.total_xrp_released ?? 0} XRP`],
+                ["EUR committed", `${dashboard?.total_xrp_locked ?? 0} EUR`],
+                ["EUR released", `${dashboard?.total_xrp_released ?? 0} EUR`],
                 ["Confirmed", confirmedCount],
               ].map(([label, value]) => (
                 <div
@@ -200,7 +242,7 @@ export default function FunderDashboard({
             >
               <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
                 <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
-                  Amount in XRP
+                  Amount in EUR
                   <input
                     type="number"
                     min="1"
@@ -224,7 +266,7 @@ export default function FunderDashboard({
 
               {isCreating ? (
                 <div className="md:col-span-2">
-                  <DashboardSpinner text="Creating XRPL escrow..." />
+                  <DashboardSpinner text="Creating funding case..." />
                 </div>
               ) : null}
 
@@ -251,7 +293,7 @@ export default function FunderDashboard({
                       Amount
                     </div>
                     <div className="mt-2 font-semibold text-emerald-950">
-                      {createdCase.amount_xrp} XRP
+                      {createdCase.amount_xrp} EUR
                     </div>
                   </div>
                   <div>
@@ -302,6 +344,218 @@ export default function FunderDashboard({
           </div>
 
           <div className="mt-6 flex flex-col gap-6">
+            <section className="rounded-3xl border border-slate-100 bg-slate-50 p-5">
+              <div className="flex flex-col gap-2">
+                <h2 className="text-lg font-semibold tracking-tight text-slate-900">
+                  Link funding to a clinic appointment
+                </h2>
+                <p className="text-sm text-slate-500">
+                  Use the new clinic admin flow to attach a funding case to a
+                  booked appointment before the clinic confirms care.
+                </p>
+              </div>
+
+              <form
+                onSubmit={onLinkFunding}
+                className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]"
+              >
+                <div className="space-y-4 rounded-3xl border border-white bg-white p-5">
+                  <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+                    Choose clinic
+                    <select
+                      value={selectedClinicId}
+                      onChange={onClinicChange}
+                      className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
+                    >
+                      <option value="">Select a clinic</option>
+                      {clinics.map((clinic) => (
+                        <option key={clinic.id} value={clinic.id}>
+                          {clinic.name} - {clinic.city}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  {selectedClinic ? (
+                    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-600">
+                      <div className="font-semibold text-slate-900">
+                        {selectedClinic.name}
+                      </div>
+                      <div className="mt-1">{selectedClinic.doctor_name}</div>
+                      <div className="mt-1">
+                        {selectedClinic.address}, {selectedClinic.city}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {isLoadingClinics ? (
+                    <DashboardSpinner text="Loading clinics..." />
+                  ) : null}
+
+                  {clinicsError ? (
+                    <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                      {clinicsError}
+                    </div>
+                  ) : null}
+
+                  <div className="space-y-3">
+                    <div className="text-sm font-medium text-slate-700">
+                      Appointments
+                    </div>
+
+                    {isLoadingAppointments ? (
+                      <DashboardSpinner text="Loading clinic appointments..." />
+                    ) : null}
+
+                    {!isLoadingAppointments && appointmentsError ? (
+                      <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                        {appointmentsError}
+                      </div>
+                    ) : null}
+
+                    {!isLoadingAppointments &&
+                    !appointmentsError &&
+                    selectedClinicId &&
+                    !appointments.length ? (
+                      <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-500">
+                        No appointments found for this clinic yet.
+                      </div>
+                    ) : null}
+
+                    {!isLoadingAppointments && appointments.length ? (
+                      <div className="space-y-3">
+                        {appointments.map((appointment) => {
+                          const isSelected =
+                            selectedAppointmentId === appointment.appointment_id;
+                          const isLinked = Boolean(appointment.funding_case_id);
+
+                          return (
+                            <button
+                              key={appointment.appointment_id}
+                              type="button"
+                              onClick={() =>
+                                setSelectedAppointmentId(
+                                  appointment.appointment_id
+                                )
+                              }
+                              className={`w-full rounded-3xl border px-4 py-4 text-left transition ${
+                                isSelected
+                                  ? "border-rose-300 bg-rose-50"
+                                  : "border-slate-200 bg-white hover:border-slate-300"
+                              }`}
+                            >
+                              <div className="flex flex-wrap items-start justify-between gap-3">
+                                <div>
+                                  <div className="text-sm font-semibold text-slate-900">
+                                    {formatDateTime(appointment.slot_datetime)}
+                                  </div>
+                                  <div className="mt-1 font-mono text-xs text-slate-500">
+                                    Appointment ID: {appointment.appointment_id}
+                                  </div>
+                                  <div className="mt-1 font-mono text-xs text-slate-500">
+                                    Patient case: {appointment.patient_case_id}
+                                  </div>
+                                </div>
+
+                                <div className="flex flex-col items-end gap-2">
+                                  <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+                                    {formatAppointmentStatus(appointment.status)}
+                                  </span>
+                                  <span
+                                    className={`rounded-full border px-3 py-1 text-xs font-semibold ${
+                                      isLinked
+                                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                        : "border-amber-200 bg-amber-50 text-amber-700"
+                                    }`}
+                                  >
+                                    {isLinked ? "Funding linked" : "Funding missing"}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="mt-3 text-xs text-slate-500">
+                                {isLinked
+                                  ? `Linked funding case: ${appointment.funding_case_id}`
+                                  : "This appointment still needs a funding case."}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="space-y-4 rounded-3xl border border-white bg-white p-5">
+                  <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+                    Choose funding case
+                    <select
+                      value={selectedFundingCaseId}
+                      onChange={(event) =>
+                        setSelectedFundingCaseId(event.target.value)
+                      }
+                      className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
+                    >
+                      <option value="">Select a funding case</option>
+                      {linkableFundingCases.map((caseItem) => (
+                        <option key={caseItem.case_id} value={caseItem.case_id}>
+                          {caseItem.amount_xrp} EUR - {formatStatusLabel(
+                            getUiStatus(caseItem)
+                          )} - {formatAnonymousId(caseItem.case_id)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-600">
+                    <div className="font-semibold text-slate-900">
+                      What this does
+                    </div>
+                    <p className="mt-2">
+                      The selected funding case is attached to the chosen
+                      appointment through the backend endpoint{" "}
+                      <span className="font-mono text-xs text-slate-700">
+                        PATCH /api/clinic-admin/appointments/{"{id}"}/link-funding
+                      </span>
+                      .
+                    </p>
+                  </div>
+
+                  {linkableFundingCases.length ? null : (
+                    <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-500">
+                      Create a funding case first to link it to an appointment.
+                    </div>
+                  )}
+
+                  {linkError ? (
+                    <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                      {linkError}
+                    </div>
+                  ) : null}
+
+                  {linkSuccess ? (
+                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                      {linkSuccess}
+                    </div>
+                  ) : null}
+
+                  <button
+                    type="submit"
+                    disabled={
+                      isLinking ||
+                      !selectedClinicId ||
+                      !selectedAppointmentId ||
+                      !selectedFundingCaseId
+                    }
+                    className="inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                    style={{ backgroundColor: BRAND_COLOR }}
+                  >
+                    {isLinking ? "Linking funding..." : "Link funding case"}
+                  </button>
+                </div>
+              </form>
+            </section>
+
             {groupedCases.length ? (
               groupedCases.map(([country, cases]) => (
                 <div key={country} className="rounded-3xl border border-slate-100">
@@ -338,7 +592,7 @@ export default function FunderDashboard({
                                 {caseItem.voucher_id || "Not issued"}
                               </td>
                               <td className="px-5 py-4 font-medium text-slate-900">
-                                {caseItem.amount_xrp} XRP
+                                {caseItem.amount_xrp} EUR
                               </td>
                               <td className="px-5 py-4">
                                 <span
