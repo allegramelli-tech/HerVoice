@@ -42,6 +42,12 @@ def create_patient_case(email: str, phone: Optional[str], country_of_origin: str
     db.add(case)
     db.commit()
     db.refresh(case)
+
+    print(
+        f"[CASE_CREATED] case_id={case.id} access_code={case.access_code} "
+        f"country={case.country_of_origin} email={case.email}"
+    )
+
     return case
 
 
@@ -81,6 +87,12 @@ def book_appointment(access_code: str, slot_id: str, db: Session) -> Appointment
     case.care_status = CareStatus.APPOINTMENT_REQUESTED
     db.commit()
     db.refresh(appointment)
+
+    print(
+        f"[APPOINTMENT_BOOKED] appointment_id={appointment.id} "
+        f"patient_case_id={case.id} slot_id={slot_id}"
+    )
+
     return appointment
 
 
@@ -197,12 +209,26 @@ def submit_completion_proof(
 
         if voucher and voucher.status.value == "unused":
             try:
+                print(
+                    f"[ESCROW_RELEASE_STARTED] proof_id={proof.id} "
+                    f"funding_case_id={appointment.funding_case_id} voucher_id={voucher.id}"
+                )
+
                 result = confirm_service_and_release(voucher.id, db)
+
                 proof.escrow_tx_hash = result["tx_hash"]
                 patient_case.care_status = CareStatus.PAYMENT_RELEASED
                 db.commit()
                 db.refresh(proof)
+
+                print(
+                    f"[ESCROW_RELEASE_SUCCESS] proof_id={proof.id} "
+                    f"funding_case_id={appointment.funding_case_id} tx_hash={result['tx_hash']}"
+                )
             except Exception as e:
-                print(f"[WARNING] Escrow release failed after proof submission: {e}")
+                print(
+                    f"[ESCROW_RELEASE_FAILED] proof_id={proof.id} "
+                    f"funding_case_id={appointment.funding_case_id} error={e}"
+                )
 
     return proof

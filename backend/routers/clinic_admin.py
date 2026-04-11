@@ -111,6 +111,10 @@ def link_funding_case(
     appointment.funding_case_id = funding_case_id
     db.commit()
 
+    print(
+        f"[FUNDING_LINKED] appointment_id={appointment_id} funding_case_id={funding_case_id}"
+    )
+
     return {
         "appointment_id": appointment_id,
         "funding_case_id": funding_case_id,

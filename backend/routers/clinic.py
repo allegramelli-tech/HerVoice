@@ -38,6 +38,11 @@ def confirm(request: ConfirmServiceRequest, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+    print(
+        f"[MANUAL_ESCROW_RELEASE_SUCCESS] voucher_id={request.voucher_id} "
+        f"tx_hash={result['tx_hash']}"
+    )
+
     case_result = get_voucher_with_case(request.voucher_id, db)
     case = case_result[1]
 
