@@ -1,44 +1,89 @@
 "use client";
 
-import { Header } from "../components/Header";
-import { AccountInfo } from "../components/AccountInfo";
-import { TransactionForm } from "../components/TransactionForm";
+import Image from "next/image";
+import Link from "next/link";
 
-export default function Home() {
+const PORTALS = [
+  {
+    href: "/patient",
+    title: "I need support",
+    description: "Request anonymous funding for cross-border care.",
+    className: "text-white",
+    style: { backgroundColor: "#993556" },
+  },
+  {
+    href: "/funder",
+    title: "I am a funder / NGO",
+    description: "Manage funding cases and track payments.",
+    className: "bg-slate-900 text-white",
+  },
+  {
+    href: "/clinic",
+    title: "I am a clinic",
+    description: "Verify vouchers and confirm services.",
+    className: "bg-slate-900 text-white",
+  },
+];
+
+export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(153,53,86,0.12),_transparent_34%),linear-gradient(180deg,_#fff8fa_0%,_#f8fafc_52%,_#ffffff_100%)] px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-6xl flex-col gap-8">
+        <section className="overflow-hidden rounded-[2rem] border border-white/70 bg-white/85 px-6 py-10 shadow-[0_24px_60px_rgba(148,163,184,0.14)] backdrop-blur sm:px-10 sm:py-14">
+          <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-5">
+              <Image
+                src="/hervoice_logo.svg"
+                alt="HerVoice"
+                width={160}
+                height={44}
+                priority
+              />
+              <div className="max-w-3xl">
+                <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
+                  Safe, confidential funding for women seeking care across borders.
+                </h1>
+                <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
+                  HerVoice connects patients, trusted funding partners, and
+                  verified clinics through a calm, privacy-first digital flow.
+                </p>
+              </div>
+            </div>
 
-      <main className="flex-1">
-        <div className="container py-6">
-          <div className="mb-8">
-            <h1 className="text-2xl font-semibold tracking-tight">Scaffold-XRP</h1>
-            <p className="text-muted-foreground">
-              A starter kit for building dApps on the XRP Ledger
-            </p>
+            <div className="grid gap-4 lg:grid-cols-3">
+              {PORTALS.map((portal) => (
+                <Link
+                  key={portal.href}
+                  href={portal.href}
+                  className={`group rounded-[1.75rem] p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition duration-200 hover:-translate-y-1 ${portal.className}`}
+                  style={portal.style}
+                >
+                  <div className="flex h-full flex-col justify-between gap-8">
+                    <div className="space-y-3">
+                      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
+                        Portal
+                      </div>
+                      <h2 className="text-2xl font-semibold tracking-tight">
+                        {portal.title}
+                      </h2>
+                      <p className="max-w-sm text-sm leading-6 text-white/80">
+                        {portal.description}
+                      </p>
+                    </div>
+
+                    <div className="inline-flex items-center gap-2 text-sm font-semibold text-white">
+                      Enter portal
+                      <span className="transition group-hover:translate-x-1">
+                        →
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
-
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <AccountInfo />
-            <TransactionForm />
-          </div>
-
-          <div className="mt-8 rounded-lg border p-6">
-            <h2 className="font-semibold mb-3">Getting Started</h2>
-            <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-              <li>Connect your wallet using the button in the header</li>
-              <li>View your account details in the account info panel</li>
-              <li>Send XRP transactions using the transaction form</li>
-            </ol>
-          </div>
-        </div>
-      </main>
-
-      <footer className="border-t py-6">
-        <div className="container text-center text-sm text-muted-foreground">
-          Built with Scaffold-XRP
-        </div>
-      </footer>
-    </div>
+        </section>
+      </div>
+    </main>
   );
 }
