@@ -1,13 +1,15 @@
 import os
-import shutil
+import uuid
 from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
+
 from database import get_db
 from schemas import SubmitProofResponse
 from services.appointment_service import submit_completion_proof
-from models import CompletionProof, Voucher, CareStatus
 from services.voucher_service import confirm_service_and_release
+from models import CompletionProof, Voucher, CareStatus, AppointmentStatus
 
 UPLOAD_DIR = "uploads"
 MAX_PDF_SIZE = 5 * 1024 * 1024  # 5 MB
@@ -15,6 +17,14 @@ MAX_PDF_SIZE = 5 * 1024 * 1024  # 5 MB
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 router = APIRouter(prefix="/api/proof", tags=["proof"])
+
+
+def _remove_file_if_exists(filename: Optional[str]) -> None:
+    if not filename:
+        return
+    file_path = os.path.join(UPLOAD_DIR, filename)
+    if os.path.exists(file_path):
+        os.remove(file_path)
 
 
 @router.post("", response_model=SubmitProofResponse)
@@ -32,6 +42,15 @@ def submit_proof(
 
     pdf: optional. If provided, it must be a PDF and smaller than 5 MB.
     """
+    if total_cost_eur <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "INVALID_TOTAL_COST",
+                "detail": "total_cost_eur must be greater than 0.",
+            },
+        )
+
     pdf_filename = None
 
     if pdf:
@@ -68,11 +87,21 @@ def submit_proof(
             )
 
         safe_original_name = os.path.basename(original_name)
-        safe_filename = f"{appointment_id}_{safe_original_name}"
+        unique_suffix = uuid.uuid4().hex
+        safe_filename = f"{appointment_id}_{unique_suffix}_{safe_original_name}"
         file_path = os.path.join(UPLOAD_DIR, safe_filename)
 
-        with open(file_path, "wb") as f:
-            f.write(file_bytes)
+        try:
+            with open(file_path, "wb") as f:
+                f.write(file_bytes)
+        except OSError:
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "error": "PROOF_FILE_SAVE_FAILED",
+                    "detail": "Failed to save uploaded proof file.",
+                },
+            )
 
         pdf_filename = safe_filename
 
@@ -85,6 +114,7 @@ def submit_proof(
             db=db,
         )
     except ValueError as e:
+        _remove_file_if_exists(pdf_filename)
         raise HTTPException(
             status_code=400,
             detail={
@@ -92,10 +122,25 @@ def submit_proof(
                 "detail": str(e),
             },
         )
+    except Exception:
+        _remove_file_if_exists(pdf_filename)
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "SUBMIT_PROOF_FAILED",
+                "detail": "Unexpected error while submitting proof.",
+            },
+        )
 
     message = "Proof submitted."
     if proof.escrow_tx_hash:
         message = "Proof submitted. Payment released on XRPL."
+
+    print(
+        f"[PROOF_SUBMITTED] proof_id={proof.id} "
+        f"appointment_id={proof.appointment_id} "
+        f"escrow_tx_hash={proof.escrow_tx_hash}"
+    )
 
     return SubmitProofResponse(
         proof_id=proof.id,
@@ -103,22 +148,13 @@ def submit_proof(
         escrow_tx_hash=proof.escrow_tx_hash,
         message=message,
     )
-    
+
+
 @router.post("/{proof_id}/retry-payout")
 def retry_payout(proof_id: str, db: Session = Depends(get_db)):
     """
     Retry payout for a proof that was submitted successfully
     but did not complete XRPL release automatically.
-
-    Success path:
-    - proof exists
-    - appointment has linked funding_case_id
-    - funding_case has an unused voucher
-    - confirm_service_and_release succeeds
-
-    On success:
-    - proof.escrow_tx_hash is updated
-    - patient_case.care_status becomes PAYMENT_RELEASED
     """
     proof = db.query(CompletionProof).filter(CompletionProof.id == proof_id).first()
     if not proof:
@@ -146,6 +182,24 @@ def retry_payout(proof_id: str, db: Session = Depends(get_db)):
             detail={
                 "error": "APPOINTMENT_NOT_FOUND",
                 "detail": "This proof is not linked to a valid appointment.",
+            },
+        )
+
+    if appointment.status != AppointmentStatus.COMPLETED:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "APPOINTMENT_NOT_COMPLETED",
+                "detail": "Payout can only be retried for completed appointments.",
+            },
+        )
+
+    if appointment.patient_case and appointment.patient_case.care_status == CareStatus.PAYMENT_RELEASED:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "CASE_ALREADY_PAID",
+                "detail": "This patient case is already marked as payment released.",
             },
         )
 
@@ -182,22 +236,30 @@ def retry_payout(proof_id: str, db: Session = Depends(get_db)):
             },
         )
     except Exception as e:
+        print(
+            f"[RETRY_PAYOUT_ERROR] proof_id={proof.id} "
+            f"appointment_id={proof.appointment_id} "
+            f"funding_case_id={appointment.funding_case_id} "
+            f"error={str(e)}"
+        )
         raise HTTPException(
             status_code=500,
             detail={
                 "error": "RETRY_PAYOUT_FAILED",
-                "detail": str(e),
+                "detail": "Unexpected error while retrying payout.",
             },
         )
 
     proof.escrow_tx_hash = result["tx_hash"]
+
     if appointment.patient_case:
         appointment.patient_case.care_status = CareStatus.PAYMENT_RELEASED
+
     db.commit()
     db.refresh(proof)
 
     print(
-        f"[PROOF_SUBMITTED] proof_id={proof.id} appointment_id={proof.appointment_id} "
+        f"[PROOF_SUBMITTED] proof_id={proof.id} appointment_id={appointment_id} "
         f"funding_case_id={appointment.funding_case_id}"
     )
 
