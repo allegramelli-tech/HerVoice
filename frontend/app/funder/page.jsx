@@ -21,7 +21,9 @@ function getUiStatus(caseItem) {
 
 function formatAnonymousId(caseId) {
   const compact = (caseId || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
-  return `DID-${compact.slice(-6).padStart(6, "0")}`;
+  if (!compact) return "Unavailable";
+  if (compact.length <= 12) return compact;
+  return `${compact.slice(0, 6)}...${compact.slice(-4)}`;
 }
 
 export default function FunderPage() {

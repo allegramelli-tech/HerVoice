@@ -426,7 +426,7 @@ export default function FunderDashboard({
                   </div>
                   <div>
                     <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                      Reservation ID
+                      Verification key
                     </div>
                     <div className="mt-2 break-all font-mono text-emerald-950">
                       {createdCase.voucher_id}
@@ -721,7 +721,7 @@ export default function FunderDashboard({
                   groupedCases.map(([country, cases]) => (
                     <div key={country} className="rounded-3xl border border-slate-100">
                       <div className="border-b border-slate-100 bg-slate-50 px-5 py-4">
-                        <div className="text-sm font-semibold text-slate-900">{country}</div>
+                    <div className="text-sm font-semibold text-slate-900">{country}</div>
                       </div>
 
                       <div className="space-y-3 px-4 py-4 md:hidden">
@@ -739,20 +739,20 @@ export default function FunderDashboard({
                               <div className="flex flex-col gap-3">
                                 <div>
                                   <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                                    Anonymous ID
+                                    Reservation ID
                                   </div>
                                   <div className="mt-1 break-all font-mono text-sm text-slate-900">
-                                    {formatAnonymousId(caseItem.case_id)}
+                                    {caseItem.case_id}
                                   </div>
                                 </div>
 
                                 <div className="grid gap-3 sm:grid-cols-2">
                                   <div>
                                     <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                                      Reservation
+                                      Reservation date
                                     </div>
-                                    <div className="mt-1 break-all font-mono text-xs text-slate-600">
-                                      {caseItem.voucher_id || "Not issued"}
+                                    <div className="mt-1 text-sm text-slate-600">
+                                      {formatDateTime(caseItem.created_at)}
                                     </div>
                                   </div>
                                   <div>
@@ -793,8 +793,8 @@ export default function FunderDashboard({
                         <table className="min-w-full divide-y divide-slate-100 text-left">
                           <thead className="bg-white">
                             <tr className="text-xs uppercase tracking-[0.18em] text-slate-400">
-                              <th className="px-5 py-4 font-semibold">Anonymous ID</th>
-                              <th className="px-5 py-4 font-semibold">Reservation</th>
+                              <th className="px-5 py-4 font-semibold">Reservation ID</th>
+                              <th className="px-5 py-4 font-semibold">Reservation date</th>
                               <th className="px-5 py-4 font-semibold">Amount</th>
                               <th className="px-5 py-4 font-semibold">Status</th>
                               <th className="px-5 py-4 font-semibold">Clinic confirmed</th>
@@ -809,11 +809,11 @@ export default function FunderDashboard({
 
                               return (
                                 <tr key={caseItem.case_id}>
-                                  <td className="px-5 py-4 font-mono text-slate-900">
-                                    {formatAnonymousId(caseItem.case_id)}
+                                  <td className="px-5 py-4 font-mono text-xs text-slate-900">
+                                    <span className="break-all">{caseItem.case_id}</span>
                                   </td>
-                                  <td className="px-5 py-4 font-mono text-xs text-slate-600">
-                                    {caseItem.voucher_id || "Not issued"}
+                                  <td className="px-5 py-4 text-sm text-slate-600">
+                                    {formatDateTime(caseItem.created_at)}
                                   </td>
                                   <td className="px-5 py-4 font-medium text-slate-900">
                                     {caseItem.amount_xrp} EUR

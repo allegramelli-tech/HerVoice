@@ -1,8 +1,7 @@
 "use client";
 
 import BrandLogo from "../BrandLogo";
-
-const BRAND_COLOR = "#993556";
+import ReservationVerification from "./ReservationVerification";
 
 function Spinner({ text }) {
   return (
@@ -13,7 +12,23 @@ function Spinner({ text }) {
   );
 }
 
-function getStatusClasses(status) {
+function getStatusClasses(status, isActive) {
+  if (isActive) {
+    return "border-rose-300 bg-rose-50 shadow-[0_12px_30px_rgba(153,53,86,0.10)]";
+  }
+
+  if (status === "Released") {
+    return "border-emerald-100 bg-white hover:border-emerald-200";
+  }
+
+  if (status === "Confirmed") {
+    return "border-sky-100 bg-white hover:border-sky-200";
+  }
+
+  return "border-slate-100 bg-white hover:border-slate-200";
+}
+
+function getBadgeClasses(status) {
   if (status === "Released") {
     return "border-emerald-200 bg-emerald-50 text-emerald-700";
   }
@@ -25,26 +40,37 @@ function getStatusClasses(status) {
   return "border-amber-200 bg-amber-50 text-amber-700";
 }
 
+function formatDateTime(value) {
+  if (!value) return "Unavailable";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+}
+
 export default function ClinicInterface({
   onSignOut,
-  voucherId,
-  setVoucherId,
-  onVerify,
-  onConfirm,
-  isVerifying,
-  isConfirming,
-  actionError,
-  verification,
-  confirmResult,
   isLoadingRequests,
   requestsError,
   incomingRequests,
-  setVerification,
-  setConfirmResult,
-  setActionError,
-  setVoucherFromCase,
+  filteredRequests,
+  requestFilter,
+  setRequestFilter,
+  selectedRequest,
+  onSelectRequest,
+  verificationFields,
+  onVerificationFieldChange,
+  onVerify,
+  isVerifying,
+  actionError,
+  verification,
   getUiStatus,
-  formatAnonymousId,
 }) {
   const totalRequests = incomingRequests.length;
   const pendingRequests = incomingRequests.filter(
@@ -56,6 +82,18 @@ export default function ClinicInterface({
   const releasedRequests = incomingRequests.filter(
     (caseItem) => getUiStatus(caseItem) === "Released"
   ).length;
+
+  const filters = [
+    { value: "all", label: "Total requests", count: totalRequests, status: "All" },
+    { value: "pending", label: "Pending", count: pendingRequests, status: "Pending" },
+    {
+      value: "confirmed",
+      label: "Confirmed",
+      count: confirmedRequests,
+      status: "Confirmed",
+    },
+    { value: "released", label: "Released", count: releasedRequests, status: "Released" },
+  ];
 
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,_#fff8fa_0%,_#f8fafc_48%,_#ffffff_100%)]">
@@ -87,229 +125,57 @@ export default function ClinicInterface({
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
-        <section className="rounded-3xl border border-white/70 bg-white p-6 shadow-[0_20px_50px_rgba(148,163,184,0.12)] lg:col-span-2">
+      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+        <section className="rounded-3xl border border-white/70 bg-white p-6 shadow-[0_20px_50px_rgba(148,163,184,0.12)]">
           <div className="flex flex-col gap-5">
-            <div className="flex flex-col gap-2">
+            <div>
               <div className="inline-flex w-fit rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#993556]">
                 Clinic operations
               </div>
-              <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-                Review reservations and release care payments with confidence
+              <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900">
+                Review and verify incoming reservations
               </h1>
-              <p className="text-sm text-slate-500">
-                Verify reservation details, confirm completed care, and keep track of
-                incoming requests in one calm workflow.
+              <p className="mt-2 text-sm text-slate-500">
+                Choose a status filter, open a reservation, and continue the
+                verification flow from there.
               </p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-3xl border border-rose-100 bg-[linear-gradient(180deg,_#fff9fb_0%,_#ffffff_100%)] p-5">
-                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  Total requests
-                </div>
-                <div className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">
-                  {totalRequests}
-                </div>
-              </div>
-              <div className="rounded-3xl border border-slate-100 bg-white/90 p-5">
-                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  Pending
-                </div>
-                <div className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">
-                  {pendingRequests}
-                </div>
-              </div>
-              <div className="rounded-3xl border border-slate-100 bg-white/90 p-5">
-                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  Confirmed
-                </div>
-                <div className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">
-                  {confirmedRequests}
-                </div>
-              </div>
-              <div className="rounded-3xl border border-slate-100 bg-white/90 p-5">
-                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  Released
-                </div>
-                <div className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">
-                  {releasedRequests}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-3xl border border-white/70 bg-white p-6 shadow-[0_20px_50px_rgba(148,163,184,0.12)]">
-          <div className="flex flex-col gap-6">
-            <div className="rounded-3xl border border-slate-100 bg-slate-50 p-5">
-              <div className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">
-                Verification workspace
-              </div>
-              <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-                Reservation verification
-              </h1>
-              <p className="mt-2 text-sm text-slate-500">
-                Verify the reservation before confirming that care has been provided.
-              </p>
-            </div>
-
-            <div className="rounded-3xl border border-slate-100 bg-white">
-              <form onSubmit={onVerify} className="flex flex-col gap-4 p-5">
-                <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
-                  Reservation ID
-                  <input
-                    value={voucherId}
-                    onChange={(event) => setVoucherId(event.target.value)}
-                    className="rounded-2xl border border-slate-200 px-4 py-3 font-mono text-sm text-slate-900 outline-none transition focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
-                    placeholder="Paste reservation ID"
-                  />
-                </label>
-
-                <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                  Select a request on the right to fill the reservation ID automatically,
-                  or paste a reservation ID manually.
-                </div>
-
-                <div className="flex flex-col gap-3 sm:flex-row">
+              {filters.map((filter) => {
+                const isActive = requestFilter === filter.value;
+                return (
                   <button
-                    type="submit"
-                    disabled={isVerifying || isConfirming}
-                    className="inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-                    style={{ backgroundColor: BRAND_COLOR }}
-                  >
-                    Verify
-                  </button>
-                  <button
+                    key={filter.value}
                     type="button"
-                    onClick={onConfirm}
-                    disabled={
-                      isVerifying ||
-                      isConfirming ||
-                      !verification?.valid ||
-                      verification?.status === "redeemed"
-                    }
-                    className="inline-flex items-center justify-center rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:bg-emerald-300"
+                    onClick={() => setRequestFilter(filter.value)}
+                    className={`rounded-3xl border p-5 text-left transition ${getStatusClasses(
+                      filter.status,
+                      isActive
+                    )}`}
                   >
-                    Confirm service
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                      {filter.label}
+                    </div>
+                    <div className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">
+                      {filter.count}
+                    </div>
                   </button>
-                </div>
-              </form>
+                );
+              })}
             </div>
-
-            {isVerifying ? <Spinner text="Checking reservation..." /> : null}
-            {isConfirming ? <Spinner text="Waiting for XRPL confirmation..." /> : null}
-
-            {actionError ? (
-              <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
-                {actionError}
-              </div>
-            ) : null}
-
-            {verification ? (
-              <div className="rounded-3xl border border-slate-100 bg-slate-50 p-5">
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <h2 className="text-lg font-semibold text-slate-900">
-                    Verification result
-                  </h2>
-                  <span
-                    className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${
-                      verification.valid
-                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                        : "border-rose-200 bg-rose-50 text-rose-700"
-                    }`}
-                  >
-                    {verification.valid ? "Valid" : "Invalid"}
-                  </span>
-                </div>
-
-                <div className="grid gap-4 text-sm sm:grid-cols-2">
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                      Reservation ID
-                    </div>
-                    <div className="mt-2 break-all font-mono text-slate-900">
-                      {verification.voucher_id}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                      Amount
-                    </div>
-                    <div className="mt-2 font-medium text-slate-900">
-                      {verification.amount_xrp ?? "-"} EUR
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                      Status
-                    </div>
-                    <div className="mt-2 font-medium text-slate-900">
-                      {verification.status || "Unavailable"}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                      Case ID
-                    </div>
-                    <div className="mt-2 break-all font-mono text-slate-900">
-                      {verification.case_id || "Unavailable"}
-                    </div>
-                  </div>
-                </div>
-
-                <p className="mt-4 text-sm text-slate-600">{verification.message}</p>
-              </div>
-            ) : null}
-
-            {confirmResult ? (
-              <div className="rounded-3xl border border-emerald-200 bg-emerald-50 p-5">
-                <h2 className="text-lg font-semibold text-emerald-900">
-                  Payment released
-                </h2>
-                <p className="mt-2 text-sm text-emerald-800">
-                  Payment has been released successfully.
-                </p>
-                <div className="mt-4 grid gap-4 text-sm sm:grid-cols-2">
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                      Reservation ID
-                    </div>
-                    <div className="mt-2 break-all font-mono text-emerald-900">
-                      {confirmResult.voucher_id}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                      Amount
-                    </div>
-                    <div className="mt-2 font-medium text-emerald-900">
-                      {confirmResult.amount_xrp} EUR
-                    </div>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                      Payment tx hash
-                    </div>
-                    <div className="mt-2 break-all font-mono text-emerald-900">
-                      {confirmResult.tx_hash}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : null}
           </div>
         </section>
 
         <section className="rounded-3xl border border-white/70 bg-white p-6 shadow-[0_20px_50px_rgba(148,163,184,0.12)]">
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-5">
             <div>
               <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
                 Incoming requests
               </h2>
               <p className="mt-2 text-sm text-slate-500">
-                Select a request to prefill the reservation field and continue the
-                verification flow more quickly.
+                Showing {requestFilter === "all" ? "all" : requestFilter} reservations
+                currently available in the dashboard.
               </p>
             </div>
 
@@ -321,130 +187,78 @@ export default function ClinicInterface({
               </div>
             ) : null}
 
-            <div className="overflow-hidden rounded-3xl border border-slate-100">
-              <div className="space-y-3 px-4 py-4 md:hidden">
-                {incomingRequests.length ? (
-                  incomingRequests.map((caseItem) => (
+            {filteredRequests.length ? (
+              <div className="grid gap-4">
+                {filteredRequests.map((request) => {
+                  const isSelected = selectedRequest?.case_id === request.case_id;
+                  const status = getUiStatus(request);
+
+                  return (
                     <button
-                      key={caseItem.case_id}
+                      key={request.case_id}
                       type="button"
-                      onClick={() => {
-                        setVoucherFromCase(caseItem.voucher_id || "");
-                        setVerification(null);
-                        setConfirmResult(null);
-                        setActionError("");
-                      }}
-                      className={`w-full rounded-2xl border bg-white p-4 text-left transition hover:bg-rose-50/70 ${
-                        voucherId === (caseItem.voucher_id || "")
-                          ? "border-rose-300 shadow-[0_12px_30px_rgba(153,53,86,0.10)]"
-                          : "border-slate-100"
+                      onClick={() => onSelectRequest(request)}
+                      className={`rounded-3xl border p-5 text-left transition ${
+                        isSelected
+                          ? "border-rose-300 bg-rose-50 shadow-[0_12px_30px_rgba(153,53,86,0.10)]"
+                          : "border-slate-100 bg-white hover:border-slate-200 hover:bg-slate-50/80"
                       }`}
                     >
-                      <div className="flex flex-col gap-3">
-                        <div>
-                          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                            Anonymous ID
-                          </div>
-                          <div className="mt-1 break-all font-mono text-sm text-slate-900">
-                            {formatAnonymousId(caseItem.case_id)}
-                          </div>
-                        </div>
-                        <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="grid flex-1 gap-4 md:grid-cols-2">
                           <div>
                             <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                              Reservation
+                              Reservation ID
                             </div>
-                            <div className="mt-1 break-all font-mono text-xs text-slate-600">
-                              {caseItem.voucher_id}
+                            <div className="mt-2 break-all font-mono text-sm text-slate-900">
+                              {request.case_id}
                             </div>
                           </div>
+
                           <div>
                             <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                              Amount
+                              Reservation date
                             </div>
-                            <div className="mt-1 text-sm font-medium text-slate-900">
-                              {caseItem.amount_xrp} EUR
+                            <div className="mt-2 text-sm font-medium text-slate-900">
+                              {formatDateTime(request.created_at)}
                             </div>
                           </div>
                         </div>
-                        <div>
+
+                        <div className="flex flex-wrap items-center gap-3">
+                          <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+                            {request.amount_xrp} EUR
+                          </div>
                           <span
-                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${getStatusClasses(
-                              getUiStatus(caseItem)
+                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${getBadgeClasses(
+                              status
                             )}`}
                           >
-                            {getUiStatus(caseItem)}
+                            {status}
                           </span>
                         </div>
                       </div>
                     </button>
-                  ))
-                ) : (
-                  <div className="px-2 py-6 text-center text-sm text-slate-500">
-                    No incoming requests available yet.
-                  </div>
-                )}
+                  );
+                })}
               </div>
-
-              <div className="hidden overflow-x-auto md:block">
-                <table className="min-w-full divide-y divide-slate-100 text-left">
-                  <thead className="bg-slate-50">
-                    <tr className="text-xs uppercase tracking-[0.18em] text-slate-400">
-                      <th className="px-4 py-4 font-semibold">Anonymous ID</th>
-                      <th className="px-4 py-4 font-semibold">Reservation</th>
-                      <th className="px-4 py-4 font-semibold">Amount</th>
-                      <th className="px-4 py-4 font-semibold">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 bg-white text-sm text-slate-700">
-                    {incomingRequests.length ? (
-                      incomingRequests.map((caseItem) => (
-                        <tr
-                          key={caseItem.case_id}
-                          onClick={() => {
-                            setVoucherFromCase(caseItem.voucher_id || "");
-                            setVerification(null);
-                            setConfirmResult(null);
-                            setActionError("");
-                          }}
-                          className="cursor-pointer transition hover:bg-rose-50/70"
-                        >
-                          <td className="px-4 py-4 font-mono text-slate-900">
-                            {formatAnonymousId(caseItem.case_id)}
-                          </td>
-                          <td className="px-4 py-4 font-mono text-xs text-slate-600">
-                            {caseItem.voucher_id}
-                          </td>
-                          <td className="px-4 py-4 font-medium text-slate-900">
-                            {caseItem.amount_xrp} EUR
-                          </td>
-                          <td className="px-4 py-4">
-                            <span
-                              className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${getStatusClasses(
-                                getUiStatus(caseItem)
-                              )}`}
-                            >
-                              {getUiStatus(caseItem)}
-                            </span>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan="4"
-                          className="px-4 py-10 text-center text-sm text-slate-500"
-                        >
-                          No incoming requests available yet.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500">
+                No requests available for this filter yet.
               </div>
-            </div>
+            )}
           </div>
         </section>
+
+        <ReservationVerification
+          selectedRequest={selectedRequest}
+          formData={verificationFields}
+          onChange={onVerificationFieldChange}
+          onSubmit={onVerify}
+          isVerifying={isVerifying}
+          actionError={actionError}
+          verification={verification}
+        />
       </div>
     </main>
   );

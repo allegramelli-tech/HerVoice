@@ -7,6 +7,13 @@ import ClinicInterface from "../../components/clinic/ClinicInterface";
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+const INITIAL_VERIFICATION_FIELDS = {
+  lastName: "",
+  firstName: "",
+  insuranceNumber: "",
+  birthDate: "",
+};
+
 function getUiStatus(caseItem) {
   if (caseItem.case_status === "released") {
     return "Released";
@@ -19,24 +26,22 @@ function getUiStatus(caseItem) {
   return "Pending";
 }
 
-function formatAnonymousId(caseId) {
-  const compact = (caseId || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
-  return `DID-${compact.slice(-6).padStart(6, "0")}`;
-}
-
 export default function ClinicPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [loginError, setLoginError] = useState("");
   const [voucherId, setVoucherId] = useState("");
   const [verification, setVerification] = useState(null);
-  const [confirmResult, setConfirmResult] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
-  const [isConfirming, setIsConfirming] = useState(false);
   const [actionError, setActionError] = useState("");
   const [dashboard, setDashboard] = useState(null);
   const [isLoadingRequests, setIsLoadingRequests] = useState(false);
   const [requestsError, setRequestsError] = useState("");
+  const [requestFilter, setRequestFilter] = useState("all");
+  const [selectedRequestId, setSelectedRequestId] = useState("");
+  const [verificationFields, setVerificationFields] = useState(
+    INITIAL_VERIFICATION_FIELDS
+  );
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -72,6 +77,38 @@ export default function ClinicPage() {
     return (dashboard?.cases || []).filter((caseItem) => caseItem.voucher_id);
   }, [dashboard]);
 
+  const filteredRequests = useMemo(() => {
+    if (requestFilter === "all") {
+      return incomingRequests;
+    }
+
+    return incomingRequests.filter(
+      (caseItem) => getUiStatus(caseItem).toLowerCase() === requestFilter
+    );
+  }, [incomingRequests, requestFilter]);
+
+  const selectedRequest = useMemo(() => {
+    return incomingRequests.find((caseItem) => caseItem.case_id === selectedRequestId) || null;
+  }, [incomingRequests, selectedRequestId]);
+
+  useEffect(() => {
+    if (!selectedRequestId) {
+      return;
+    }
+
+    const isVisible = filteredRequests.some(
+      (caseItem) => caseItem.case_id === selectedRequestId
+    );
+
+    if (!isVisible) {
+      setSelectedRequestId("");
+      setVoucherId("");
+      setVerification(null);
+      setActionError("");
+      setVerificationFields(INITIAL_VERIFICATION_FIELDS);
+    }
+  }, [filteredRequests, selectedRequestId]);
+
   function handleCredentialChange(event) {
     const { name, value } = event.target;
     setCredentials((current) => ({ ...current, [name]: value }));
@@ -89,14 +126,41 @@ export default function ClinicPage() {
     setIsLoggedIn(true);
   }
 
+  function handleVerificationFieldChange(event) {
+    const { name, value } = event.target;
+    setVerificationFields((current) => ({ ...current, [name]: value }));
+  }
+
+  function handleSelectRequest(request) {
+    setSelectedRequestId(request.case_id);
+    setVoucherId(request.voucher_id || "");
+    setVerification(null);
+    setActionError("");
+    setVerificationFields(INITIAL_VERIFICATION_FIELDS);
+  }
+
   async function handleVerify(event) {
     event.preventDefault();
     setActionError("");
-    setConfirmResult(null);
     setVerification(null);
 
+    if (!selectedRequest) {
+      setActionError("Select a reservation before you verify.");
+      return;
+    }
+
+    if (
+      !verificationFields.lastName.trim() ||
+      !verificationFields.firstName.trim() ||
+      !verificationFields.insuranceNumber.trim() ||
+      !verificationFields.birthDate.trim()
+    ) {
+      setActionError("Complete all verification fields before continuing.");
+      return;
+    }
+
     if (!voucherId.trim()) {
-      setActionError("Enter a reservation ID to verify.");
+      setActionError("This reservation is missing a verification key.");
       return;
     }
 
@@ -143,57 +207,6 @@ export default function ClinicPage() {
     }
   }
 
-  async function handleConfirm() {
-    setActionError("");
-    setConfirmResult(null);
-
-    if (!verification?.valid || verification.status === "redeemed") {
-      return;
-    }
-
-    setIsConfirming(true);
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/clinic/confirm`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ voucher_id: voucherId.trim() }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail || data.message || "Unable to confirm service.");
-      }
-
-      setConfirmResult(data);
-      setVerification((current) =>
-        current
-          ? {
-              ...current,
-              status: "redeemed",
-              case_id: data.case_id,
-              amount_xrp: data.amount_xrp,
-            }
-          : current
-      );
-
-      const dashboardResponse = await fetch(`${API_BASE_URL}/api/dashboard`);
-      if (dashboardResponse.ok) {
-        const dashboardData = await dashboardResponse.json();
-        setDashboard(dashboardData);
-      }
-    } catch (error) {
-      setActionError(
-        error.message || "Unable to confirm this service right now."
-      );
-    } finally {
-      setIsConfirming(false);
-    }
-  }
-
   if (!isLoggedIn) {
     return (
       <ClinicLogin
@@ -210,25 +223,28 @@ export default function ClinicPage() {
       onSignOut={() => {
         setIsLoggedIn(false);
         setCredentials({ email: "", password: "" });
+        setVoucherId("");
+        setVerification(null);
+        setActionError("");
+        setRequestFilter("all");
+        setSelectedRequestId("");
+        setVerificationFields(INITIAL_VERIFICATION_FIELDS);
       }}
-      voucherId={voucherId}
-      setVoucherId={setVoucherId}
-      onVerify={handleVerify}
-      onConfirm={handleConfirm}
-      isVerifying={isVerifying}
-      isConfirming={isConfirming}
-      actionError={actionError}
-      verification={verification}
-      confirmResult={confirmResult}
       isLoadingRequests={isLoadingRequests}
       requestsError={requestsError}
       incomingRequests={incomingRequests}
-      setVerification={setVerification}
-      setConfirmResult={setConfirmResult}
-      setActionError={setActionError}
-      setVoucherFromCase={setVoucherId}
+      filteredRequests={filteredRequests}
+      requestFilter={requestFilter}
+      setRequestFilter={setRequestFilter}
+      selectedRequest={selectedRequest}
+      onSelectRequest={handleSelectRequest}
+      verificationFields={verificationFields}
+      onVerificationFieldChange={handleVerificationFieldChange}
+      onVerify={handleVerify}
+      isVerifying={isVerifying}
+      actionError={actionError}
+      verification={verification}
       getUiStatus={getUiStatus}
-      formatAnonymousId={formatAnonymousId}
     />
   );
 }
