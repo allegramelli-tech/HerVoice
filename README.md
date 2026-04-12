@@ -86,88 +86,115 @@
 
 HerVoice is a cross-border platform prototype that reduces friction around abortion access for people in Europe who face domestic restrictions.
 
-Patients can request support, find partner clinics, and book appointments — anonymously. Funders create and track funding cases with full on-chain auditability. Clinics verify vouchers and confirm care. Settlement runs on **XRPL Testnet**, while all sensitive medical and personal data stays **off-chain**.
+Patients can select a clinic slot, create a funding case, and later verify their identity at the clinic without their raw personal information ever being stored in the database. Clinics manage slots and receive payout only after patient identity is re-entered and matched. Funders lock support in **XRPL escrow**, and settlement is released on **XRPL Testnet** once verification succeeds.
+
+The current MVP uses a **privacy-first hash-based identity model**:
+- raw patient identity is used only in-memory during a request
+- the database stores only a `patient_hash`
+- XRPL stores escrow and settlement records, plus a hashed identity anchor in the transaction memo
 
 ---
 
 ## Why This Matters
 
-|              | The Problem                                       | HerVoice's Answer                                        |
-| ------------ | ------------------------------------------------- | -------------------------------------------------------- |
-| **Patients** | No low-friction path to cross-border care         | Calm, anonymous booking flow — no login required         |
-| **Clinics**  | Uncertainty about whether pledged support settles | Verified on-chain escrow, released on confirmation       |
-| **Funders**  | No transparent audit trail                        | Immutable XRPL settlement records                        |
-| **Everyone** | Medical data leaking onto public ledgers          | Strict off-chain data model — nothing sensitive on-chain |
+|              | The Problem                                       | HerVoice's Answer                                                            |
+| ------------ | ------------------------------------------------- | --------------------------------------------------------------------------- |
+| **Patients** | Cross-border care is hard to coordinate safely    | Slot-based booking flow with no stored raw identity in the backend          |
+| **Clinics**  | Time and payment are both uncertain               | Managed clinic slots + XRPL escrow released only after identity match       |
+| **Funders**  | Support promises are hard to audit                | Transparent XRPL escrow creation and release with on-chain transaction logs |
+| **Everyone** | Sensitive medical and personal data risk exposure | Only hashed patient identity is stored; raw identity stays off-chain        |
 
 ---
 
 ## Live MVP Flow
 
-```
-Funder locks XRP in escrow
+```text
+Clinic creates available slots
         ↓
-Platform generates anonymous voucher
+Patient selects a slot and creates a funding case
         ↓
-Patient uses access code to search clinics & book
+Platform computes patient_hash (raw identity is not stored)
         ↓
-Clinic verifies voucher + confirms care
+Funder locks XRP in XRPL escrow
+        ↓
+Patient arrives at clinic and re-enters identity
+        ↓
+Hash matches active case + booked appointment
         ↓
 Escrow released to clinic on XRPL Testnet
-```
 
 ---
 
+
+---
+
+## 4. 替换 `What's Live`
+
+```md
 ## What's Live
 
-### Patient Portal
+### Patient / Case Flow
 
-- Start without login
-- Submit a support request
-- Receive a private **access code**
-- Resume a case on any device
-- Search clinics by city, name, or doctor
-- View available slots and book or cancel
+- Select a clinic slot
+- Create a funding case tied to that slot
+- Identity is hashed in-memory; raw identity is not stored
+- Duplicate active funding for the same patient hash is rejected
 
-### Funder Portal
+### Clinic Flow
 
-- Create funding cases and generate vouchers
-- View funding and operations metrics
-- Link a funding case to a booked appointment
-- Track case status in the dashboard
+- Register clinics
+- Create and manage available slots
+- Verify patient identity at arrival
+- Trigger XRPL escrow release after successful match
 
-### Clinic Portal
+### Funder Flow
 
-- Verify voucher validity
-- Confirm service delivery
-- Trigger XRPL escrow release
-- Review incoming requests
+- View funding cases in the dashboard
+- Lock XRP in escrow for a pending case
+- Track case status from `pending` → `active` → `released`
 
 ### Backend-Only (Already Implemented)
 
-- Clinic registration and slot creation
-- Appointment listing for clinic admins
-- Proof submission with optional PDF upload
-- Retry payout for failed escrow releases
+- Hash-based patient identity matching
+- Clinic slot creation
+- Appointment creation linked to funding cases
+- Appointment cancel / reschedule support
+- XRPL `EscrowCreate` and `EscrowFinish`
+- PREIMAGE-SHA-256 crypto-conditions
+- On-chain patient hash anchor via XRPL Memo
 
 ---
 
 ## Privacy Model
 
-HerVoice is designed so that **no sensitive healthcare data is written on-chain.**
+HerVoice is designed so that **raw patient identity is not stored in the backend database and never written on-chain.**
+
+**In-memory only (per request)**
+
+- Patient name
+- Date of birth
+- Insurance number
+
+These fields are used only to compute a SHA-256 hash and are then discarded.
 
 **Off-chain (database only)**
 
-- Patient email, phone, country of origin
-- Clinic and appointment data
-- Proof metadata and uploaded PDFs
+- `patient_hash`
+- Clinic data
+- Slot data
+- Appointment data
+- Funding case state
+- XRPL transaction hashes and escrow metadata
 
 **On-chain (XRPL Testnet)**
 
-- Escrow creation and release
+- `EscrowCreate`
+- `EscrowFinish`
 - Transaction hashes
+- Memo containing a hashed patient identity anchor
 - Wallet-based settlement records
 
-> The app displays anonymized IDs like `DID-XXXXXX` in the UI — these are display aliases from internal case IDs, not real DIDs yet.
+> The current MVP does **not** use DID. Identity verification is handled by recomputing the same patient hash at clinic arrival and matching it to an active funding case.
 
 ---
 
@@ -179,6 +206,8 @@ HerVoice is designed so that **no sensitive healthcare data is written on-chain.
 | `EscrowCreate`                       | Active  |
 | `EscrowFinish`                       | Active  |
 | PREIMAGE-SHA-256 crypto-conditions   | Active  |
+| Memo-based patient hash anchor       | Active  |
+| Slot-linked conditional payout       | Active  |
 | DID / Verifiable Credentials         | Roadmap |
 | Frontend wallet signing              | Roadmap |
 | AMM / DEX / NFTs                     | Roadmap |
@@ -187,21 +216,21 @@ HerVoice is designed so that **no sensitive healthcare data is written on-chain.
 
 ## Tech Stack
 
-```
-Frontend          Backend           Settlement
-─────────         ─────────         ──────────
-Next.js 14        FastAPI           XRPL Testnet
-React 18          SQLAlchemy        xrpl-py
-Tailwind CSS      SQLite            QuickNode WSS
+```text
+Frontend          Backend                     Settlement
+─────────         ─────────────────────       ──────────
+Next.js 14        FastAPI                     XRPL Testnet
+React 18          SQLAlchemy                  xrpl-py
+Tailwind CSS      SQLite                      QuickNode WSS
                   python-dotenv
-                  python-multipart
-```
+                  Hash-based identity model
+                  Slot / appointment engine
 
 ---
 
 ## Repository Structure
 
-```
+```text
 HerVoice/
 ├── backend/
 │   ├── main.py
@@ -214,15 +243,11 @@ HerVoice/
 │   │   ├── appointments.py
 │   │   ├── cases.py
 │   │   ├── clinic.py
-│   │   ├── clinic_admin.py
 │   │   ├── clinics.py
 │   │   ├── dashboard.py
-│   │   ├── fund.py
-│   │   ├── proof.py
-│   │   └── voucher.py
+│   │   └── fund.py
 │   └── services/
-│       ├── appointment_service.py
-│       ├── voucher_service.py
+│       ├── case_service.py
 │       └── xrpl_service.py
 ├── frontend/
 │   ├── app/
@@ -238,47 +263,34 @@ HerVoice/
 │       ├── funder/
 │       └── clinic/
 └── README.md
-```
 
 ---
 
 ## API Surface
 
-### Public / Patient-facing
+### Patient / Public
 
-| Method  | Endpoint                 | Description            |
-| ------- | ------------------------ | ---------------------- |
-| `POST`  | `/api/cases`             | Create support request |
-| `GET`   | `/api/cases/status`      | Resume a case          |
-| `GET`   | `/api/clinics`           | List clinics           |
-| `GET`   | `/api/clinics/{id}`      | Clinic details         |
-| `POST`  | `/api/appointments`      | Book a slot            |
-| `PATCH` | `/api/appointments/{id}` | Update appointment     |
+| Method  | Endpoint                 | Description                          |
+| ------- | ------------------------ | ------------------------------------ |
+| `POST`  | `/api/cases`             | Create funding case and bind a slot  |
+| `PATCH` | `/api/appointments/{id}` | Cancel or reschedule an appointment  |
+| `GET`   | `/api/clinics`           | List clinics with available slots    |
 
-### Funder-facing
+### Clinic
 
-| Method  | Endpoint                                           | Description                  |
-| ------- | -------------------------------------------------- | ---------------------------- |
-| `POST`  | `/api/fund`                                        | Create funding case + escrow |
-| `GET`   | `/api/dashboard`                                   | Funding dashboard            |
-| `PATCH` | `/api/clinic-admin/appointments/{id}/link-funding` | Link funding to appointment  |
+| Method | Endpoint                  | Description                          |
+| ------ | ------------------------- | ------------------------------------ |
+| `POST` | `/api/clinics`            | Register a clinic                    |
+| `POST` | `/api/clinics/{id}/slots` | Create a slot                        |
+| `POST` | `/api/clinic/verify-and-release` | Verify identity and release escrow |
 
-### Clinic-facing
+### Funder / Operations
 
-| Method | Endpoint              | Description                   |
-| ------ | --------------------- | ----------------------------- |
-| `POST` | `/api/clinic/verify`  | Verify voucher                |
-| `POST` | `/api/clinic/confirm` | Confirm care + release escrow |
-
-### Operations
-
-| Method | Endpoint                       | Description         |
-| ------ | ------------------------------ | ------------------- |
-| `POST` | `/api/clinic-admin/register`   | Register clinic     |
-| `POST` | `/api/clinic-admin/{id}/slots` | Create slots        |
-| `POST` | `/api/proof`                   | Submit proof        |
-| `POST` | `/api/proof/{id}/retry-payout` | Retry failed payout |
-| `GET`  | `/health`                      | Health check        |
+| Method | Endpoint         | Description                         |
+| ------ | ---------------- | ----------------------------------- |
+| `POST` | `/api/fund`      | Lock XRP in escrow for a case       |
+| `GET`  | `/api/dashboard` | Funding / clinic / appointment view |
+| `GET`  | `/health`        | Health check                        |
 
 ---
 
@@ -293,7 +305,7 @@ XRPL_NODE_URL=wss://your-xrpl-testnet-endpoint
 FUNDER_WALLET_SEED=your_funder_seed
 CLINIC_WALLET_SEED=your_clinic_seed
 CLINIC_WALLET_ADDRESS=your_clinic_address
-DATABASE_URL=sqlite:///./hackathon.db
+DATABASE_URL=sqlite:///./hervoice.db
 ```
 
 ```powershell
@@ -328,59 +340,66 @@ npm run dev
 
 ---
 
+
 ## Testing The MVP
+
+### As a Clinic
+
+1. Register a clinic
+2. Create one or more available slots
 
 ### As a Patient
 
 1. Open `/patient`
-2. Search and select a clinic
-3. Submit a support request
-4. Save your access code
-5. Resume and book a slot
+2. Select a clinic slot
+3. Submit identity details and create a funding case
+4. Wait for funding to be locked
 
 ### As a Funder
 
-1. Open `/funder` and sign in
-2. Create a funding case
-3. Select a clinic and a booked appointment
-4. Link the funding case
+1. Open `/funder`
+2. View pending cases in the dashboard
+3. Lock XRP in escrow for a selected case
 
-### As a Clinic
+### At Arrival
 
-1. Open `/clinic` and sign in
-2. Select an incoming request or paste a voucher ID
-3. Verify — Confirm — Check payout released
+1. Open `/clinic`
+2. Re-enter the patient's identity
+3. Check whether the identity hash matches the active booked case
+4. If matched, release escrow on XRPL
 
 ---
 
 ## Implementation Notes
 
-- Monetary values display as `EUR` in the UI; some backend fields still use `amount_xrp` for historical reasons
-- Login screens are frontend-only — no real authentication in this MVP
-- Clinic search loads from the backend and filters client-side by city, name, or doctor
-- Proof submission is implemented in the backend but not yet fully surfaced in the frontend UI
+- The backend stores only `patient_hash`, never raw patient identity
+- Raw identity is used only in-memory to compute SHA-256
+- The current MVP verifies **patient arrival and identity match**, not full surgery completion
+- Slot booking is required before funding and release
+- The clinic verification endpoint will not release escrow if the identity does not match an active booked case
+- The frontend may still contain older wording in places; the backend source of truth is now the v3.5 slot + hash + XRPL flow
 
 ---
 
 ## Roadmap
 
-- [ ] Real DID support per patient case
-- [ ] Verifiable Credentials for clinics and approved funding organizations
-- [ ] Frontend wallet integration for funders
-- [ ] Clinic-specific dashboards with stronger data partitioning
-- [ ] Realtime transaction status via QuickNode Webhooks
+- [ ] Clinic-side slot cancellation flow
+- [ ] Stronger clinic-specific wallet routing
+- [ ] Frontend support for reschedule / cancel flows
+- [ ] Better dashboard filtering and monitoring views
+- [ ] Realtime XRPL transaction updates via QuickNode
 - [ ] Production-grade auth and role management
+- [ ] Optional DID / VC exploration for future identity portability
 
 ---
 
 ## Hackathon Context
 
-HerVoice was built at **Hack the Block** to explore how XRPL can support transparent, privacy-sensitive healthcare settlement flows in a cross-border setting.
+The current MVP is intentionally opinionated:
 
-The project is intentionally opinionated:
-
-- **Privacy first** — sensitive data stays off-chain
-- **Auditable settlement** — on-chain transparency without identity exposure
+- **Privacy first** — raw patient identity is not stored
+- **Structured booking** — clinic-managed slots and appointment binding
+- **Auditable settlement** — on-chain XRPL escrow without exposing raw identity
 - **Calm UX** — designed for patients in a stressful moment
 
 ---
