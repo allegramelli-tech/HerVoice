@@ -1,39 +1,7 @@
 "use client";
 
 import Link from "next/link";
-
-const BRAND_COLOR = "#993556";
-
-function HerVoiceLogo() {
-  return (
-    <div className="flex items-center gap-3">
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 24 24"
-        className="h-5 w-5"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M12 20.2s-6.95-4.32-8.97-8.44C1.6 8.84 3.12 5.5 6.3 4.63c2.04-.56 4.14.18 5.7 1.98 1.56-1.8 3.66-2.54 5.7-1.98 3.18.87 4.7 4.21 3.27 7.13C18.95 15.88 12 20.2 12 20.2Z"
-          fill={BRAND_COLOR}
-          fillOpacity="0.15"
-          stroke={BRAND_COLOR}
-          strokeWidth="1.5"
-        />
-        <path
-          d="M12 8.2v4.1M9.95 10.25h4.1"
-          stroke={BRAND_COLOR}
-          strokeLinecap="round"
-          strokeWidth="1.6"
-        />
-      </svg>
-      <span className="text-lg font-semibold tracking-tight text-slate-900">
-        HerVoice
-      </span>
-    </div>
-  );
-}
+import BrandLogo from "../BrandLogo";
 
 export default function FunderLogin({
   credentials,
@@ -42,12 +10,12 @@ export default function FunderLogin({
   onSubmit,
 }) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,_#fff7fa_0%,_#f8fafc_100%)] px-4 py-10">
-      <div className="w-full max-w-md rounded-3xl border border-white/70 bg-white p-8 shadow-[0_24px_60px_rgba(148,163,184,0.16)]">
+    <main className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,_#fff7fa_0%,_#f8fafc_100%)] px-4 py-10 pt-14 sm:pt-10">
+      <div className="w-full max-w-md rounded-3xl border border-white/70 bg-white p-6 shadow-[0_24px_60px_rgba(148,163,184,0.16)] sm:p-8">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-4">
-            <HerVoiceLogo />
-            <div className="inline-flex w-fit rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">
+            <BrandLogo />
+            <div className="inline-flex w-fit rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#993556]">
               Funder / NGO portal
             </div>
           </div>
@@ -98,9 +66,22 @@ export default function FunderLogin({
             Sign in as a clinic instead
           </Link>
 
-          <p className="text-sm text-slate-500">
-            Access is restricted to verified funding organizations.
-          </p>
+          <div className="space-y-2 text-sm">
+            <p className="text-slate-500">
+              Access is restricted to verified funding organizations.
+            </p>
+            <p className="text-slate-500">
+              Not registered yet?{" "}
+              <Link
+                href="/contact"
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium text-[#993556] underline-offset-4 transition hover:underline"
+              >
+                Contact us
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </main>

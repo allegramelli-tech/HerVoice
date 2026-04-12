@@ -68,16 +68,22 @@ export default function PatientForm({
   selectedClinic,
   onBack,
 }) {
+  function handleExportPdf() {
+    if (typeof window !== "undefined") {
+      window.print();
+    }
+  }
+
   if (accessCode) {
     return (
-      <section className="rounded-3xl border border-rose-100 bg-white p-8 shadow-[0_24px_60px_rgba(148,163,184,0.14)]">
+      <section className="rounded-3xl border border-rose-100 bg-white p-5 shadow-[0_24px_60px_rgba(148,163,184,0.14)] print:border-slate-200 print:shadow-none sm:p-8">
         <div className="flex flex-col gap-6">
           <div className="inline-flex w-fit items-center rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">
             Request received
           </div>
 
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
               Your request was submitted successfully.
             </h1>
             <p className="mt-3 text-base text-slate-600">
@@ -86,42 +92,59 @@ export default function PatientForm({
             </p>
           </div>
 
-          <div className="grid gap-4 rounded-3xl border border-rose-100 bg-rose-50/70 p-6 sm:grid-cols-2">
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">
-                Access code
-              </div>
-              <div className="mt-2 font-mono text-xl text-slate-900">
-                {accessCode}
-              </div>
-            </div>
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">
-                Care status
-              </div>
-              <div className="mt-2 text-xl font-semibold text-slate-900">
-                {caseInfo?.care_status || "Created"}
-              </div>
-            </div>
-            {selectedClinic ? (
-              <div className="sm:col-span-2">
+          <div className="rounded-3xl border border-rose-100 bg-rose-50/70 p-5 sm:p-6">
+            <div className="grid gap-5">
+              <div>
                 <div className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">
-                  Preferred clinic
+                  Access code
                 </div>
-                <div className="mt-2 text-sm font-medium text-slate-900">
-                  {selectedClinic.name}, {selectedClinic.city}, {selectedClinic.country}
+                <div className="mt-3 break-all font-mono text-2xl text-slate-900 sm:text-3xl">
+                  {accessCode}
                 </div>
               </div>
-            ) : null}
+
+              <div className="grid gap-5 border-t border-rose-100 pt-5 sm:grid-cols-[auto_1fr] sm:gap-8">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">
+                    Care status
+                  </div>
+                  <div className="mt-2 text-lg font-semibold capitalize text-slate-900">
+                    pending
+                  </div>
+                </div>
+
+                {selectedClinic ? (
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">
+                      Preferred clinic
+                    </div>
+                    <div className="mt-2 text-base font-semibold text-slate-900">
+                      {selectedClinic.name}
+                    </div>
+                    <div className="mt-1 text-sm text-slate-600">
+                      {selectedClinic.city}
+                    </div>
+                    <div className="mt-2 break-words text-sm text-slate-500">
+                      {selectedClinic.address}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </div>
           </div>
 
-          <button
-            type="button"
-            onClick={onBack}
-            className="inline-flex w-fit items-center justify-center rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-900"
-          >
-            Start over
-          </button>
+          <div className="flex flex-col gap-3 print:hidden sm:flex-row">
+            <button
+              type="button"
+              onClick={handleExportPdf}
+              className="inline-flex items-center justify-center rounded-full bg-[#993556] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+            >
+              Export as PDF
+            </button>
+            <div className="text-sm text-slate-500 sm:self-center">
+              Opens your browser&apos;s print dialog so you can save this confirmation as a PDF.
+            </div>
+          </div>
         </div>
       </section>
     );
@@ -130,15 +153,17 @@ export default function PatientForm({
   return (
     <form
       onSubmit={onSubmit}
-      className="grid gap-6 rounded-3xl border border-white/70 bg-white p-6 shadow-[0_24px_60px_rgba(148,163,184,0.14)] sm:p-8"
+      className="grid gap-6 rounded-3xl border border-white/70 bg-white p-5 shadow-[0_24px_60px_rgba(148,163,184,0.14)] sm:p-8"
     >
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
             Complete your support request
           </h1>
           <p className="mt-2 text-sm text-slate-500">
             Fill in your details and we will prepare the next step confidentially.
+            {" "}
+            No login required. You can request support in just a few steps.
           </p>
         </div>
         <button
@@ -155,19 +180,19 @@ export default function PatientForm({
           <div className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">
             Selected clinic
           </div>
-          <div className="mt-2 text-lg font-semibold text-slate-900">
+          <div className="mt-2 break-words text-lg font-semibold text-slate-900">
             {selectedClinic.name}
           </div>
           <div className="mt-1 text-sm text-slate-600">
-            {selectedClinic.city}, {selectedClinic.country}
+            {selectedClinic.city}
           </div>
-          <div className="mt-1 text-sm text-slate-500">
-            Estimated distance: {selectedClinic.distance}
+          <div className="mt-1 break-words text-sm text-slate-500">
+            {selectedClinic.address}
           </div>
         </section>
       ) : null}
 
-      <section className="rounded-3xl border border-slate-100 bg-white p-6">
+      <section className="rounded-3xl border border-slate-100 bg-white p-5 sm:p-6">
         <div className="mb-5">
           <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
             Personal information
@@ -214,6 +239,8 @@ export default function PatientForm({
               onChange={onChange}
               className={inputClassName}
               placeholder="+49 123 456 789"
+              inputMode="tel"
+              autoComplete="tel"
             />
           </Field>
           <Field label="Country" className="md:col-span-2">
@@ -234,7 +261,7 @@ export default function PatientForm({
         </div>
       </section>
 
-      <section className="rounded-3xl border border-slate-100 bg-white p-6">
+      <section className="rounded-3xl border border-slate-100 bg-white p-5 sm:p-6">
         <div className="mb-5">
           <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
             Health insurance
@@ -242,6 +269,18 @@ export default function PatientForm({
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
+          <Field label="Insurance type">
+            <select
+              name="insuranceType"
+              value={formData.insuranceType}
+              onChange={onChange}
+              className={inputClassName}
+            >
+              <option value="">Select insurance type</option>
+              <option value="public">Public insurance</option>
+              <option value="private">Private insurance</option>
+            </select>
+          </Field>
           <Field label="Insurance provider">
             <input
               name="insuranceProvider"
@@ -262,9 +301,6 @@ export default function PatientForm({
           </Field>
         </div>
 
-        <p className="mt-4 text-sm text-slate-500">
-          This number is never sent on-chain.
-        </p>
       </section>
 
       {isSubmitting ? <Spinner text="Please wait, your request is being processed..." /> : null}
@@ -275,10 +311,7 @@ export default function PatientForm({
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-slate-500">
-          No login required. You can request support in just a few steps.
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
         <button
           type="submit"
           disabled={isSubmitting}

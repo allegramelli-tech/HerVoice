@@ -259,10 +259,8 @@ def retry_payout(proof_id: str, db: Session = Depends(get_db)):
     db.refresh(proof)
 
     print(
-        f"[RETRY_PAYOUT_SUCCESS] proof_id={proof.id} "
-        f"appointment_id={proof.appointment_id} "
-        f"funding_case_id={appointment.funding_case_id} "
-        f"tx_hash={proof.escrow_tx_hash}"
+        f"[PROOF_SUBMITTED] proof_id={proof.id} appointment_id={appointment_id} "
+        f"funding_case_id={appointment.funding_case_id}"
     )
 
     return {

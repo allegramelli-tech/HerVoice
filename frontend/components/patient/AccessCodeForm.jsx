@@ -8,9 +8,11 @@ export default function AccessCodeForm({
   onSubmit,
   isLoading,
   onBack,
+  errorMessage,
+  onRequestSupport,
 }) {
   return (
-    <section className="rounded-3xl border border-white/70 bg-white p-8 shadow-[0_24px_60px_rgba(148,163,184,0.14)]">
+    <section className="rounded-3xl border border-white/70 bg-white p-5 shadow-[0_24px_60px_rgba(148,163,184,0.14)] sm:p-8">
       <div className="mx-auto flex max-w-xl flex-col gap-6">
         <button
           type="button"
@@ -21,7 +23,7 @@ export default function AccessCodeForm({
         </button>
 
         <div className="text-center">
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
             Already have an access code? Use it here to continue.
           </h1>
           <p className="mt-3 text-sm leading-6 text-slate-600">
@@ -31,7 +33,7 @@ export default function AccessCodeForm({
 
         <form
           onSubmit={onSubmit}
-          className="rounded-3xl border border-rose-100 bg-[linear-gradient(180deg,_#fff9fb_0%,_#ffffff_100%)] p-6"
+          className="rounded-3xl border border-rose-100 bg-[linear-gradient(180deg,_#fff9fb_0%,_#ffffff_100%)] p-5 sm:p-6"
         >
           <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
             Enter your access code
@@ -51,6 +53,21 @@ export default function AccessCodeForm({
           >
             Continue
           </button>
+
+          {errorMessage ? (
+            <div className="mt-4 flex flex-col gap-3">
+              <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                {errorMessage}
+              </div>
+              <button
+                type="button"
+                onClick={onRequestSupport}
+                className="inline-flex w-full items-center justify-center rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-900"
+              >
+                Find a clinic near you
+              </button>
+            </div>
+          ) : null}
         </form>
       </div>
     </section>

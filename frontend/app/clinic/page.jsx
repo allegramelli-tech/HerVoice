@@ -96,7 +96,7 @@ export default function ClinicPage() {
     setVerification(null);
 
     if (!voucherId.trim()) {
-      setActionError("Enter a voucher ID to verify.");
+      setActionError("Enter a reservation ID to verify.");
       return;
     }
 
@@ -115,7 +115,7 @@ export default function ClinicPage() {
 
       if (!verifyResponse.ok) {
         throw new Error(
-          verifyData.detail || verifyData.message || "Unable to verify voucher."
+          verifyData.detail || verifyData.message || "Unable to verify reservation."
         );
       }
 
@@ -136,7 +136,7 @@ export default function ClinicPage() {
       });
     } catch (error) {
       setActionError(
-        error.message || "Unable to verify this voucher right now."
+        error.message || "Unable to verify this reservation right now."
       );
     } finally {
       setIsVerifying(false);
