@@ -14,18 +14,18 @@ function Spinner({ text }) {
 
 function getStatusClasses(status, isActive) {
   if (isActive) {
-    return "border-rose-300 bg-rose-50 shadow-[0_12px_30px_rgba(153,53,86,0.10)]";
+    return "border-rose-300 bg-rose-50 shadow-[0_16px_36px_rgba(153,53,86,0.14)] ring-2 ring-rose-100";
   }
 
   if (status === "Released") {
-    return "border-emerald-100 bg-white hover:border-emerald-200";
+    return "border-emerald-100 bg-white hover:border-emerald-200 hover:bg-emerald-50/40";
   }
 
   if (status === "Confirmed") {
-    return "border-sky-100 bg-white hover:border-sky-200";
+    return "border-sky-100 bg-white hover:border-sky-200 hover:bg-sky-50/40";
   }
 
-  return "border-slate-100 bg-white hover:border-slate-200";
+  return "border-slate-100 bg-white hover:border-slate-300 hover:bg-slate-50";
 }
 
 function getBadgeClasses(status) {
@@ -58,12 +58,10 @@ export default function ClinicInterface({
   onSignOut,
   isLoadingRequests,
   requestsError,
-  clinics,
   clinicsError,
   isLoadingClinics,
+  activeClinicAccount,
   selectedClinic,
-  selectedClinicId,
-  onClinicChange,
   slotDateTime,
   onSlotDateTimeChange,
   onCreateSlot,
@@ -119,10 +117,10 @@ export default function ClinicInterface({
                 Clinic workspace
               </div>
               <div className="mt-1 text-sm font-semibold text-slate-900">
-                {selectedClinic?.name || "Clinic workspace"}
+                {selectedClinic?.name || activeClinicAccount?.label || "Clinic workspace"}
               </div>
               <div className="mt-1 text-xs text-slate-500">
-                Verified clinic access
+                {activeClinicAccount?.email || "Verified clinic access"}
               </div>
             </div>
 
@@ -142,112 +140,57 @@ export default function ClinicInterface({
           <div className="flex flex-col gap-5">
             <div>
               <div className="inline-flex w-fit rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#993556]">
-                Clinic operations
-              </div>
-              <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900">
-                Review and verify incoming reservations
-              </h1>
-              <p className="mt-2 text-sm text-slate-500">
-                Choose a status filter, open an incoming reservation, and verify
-                the patient identity before funds are released.
-              </p>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {filters.map((filter) => {
-                const isActive = requestFilter === filter.value;
-                return (
-                  <button
-                    key={filter.value}
-                    type="button"
-                    onClick={() => setRequestFilter(filter.value)}
-                    className={`rounded-3xl border p-5 text-left transition ${getStatusClasses(
-                      filter.status,
-                      isActive
-                    )}`}
-                  >
-                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                      {filter.label}
-                    </div>
-                    <div className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">
-                      {filter.count}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-3xl border border-white/70 bg-white p-6 shadow-[0_20px_50px_rgba(148,163,184,0.12)]">
-          <div className="flex flex-col gap-5">
-            <div>
-              <div className="inline-flex w-fit rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#993556]">
                 Time slots
               </div>
               <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900">
                 Add clinic availability
               </h2>
               <p className="mt-2 text-sm text-slate-500">
-                Create new appointment times so patients can reserve care with the selected clinic.
+                Create new appointment times so patients can reserve care with this clinic.
               </p>
             </div>
 
             <form
               onSubmit={onCreateSlot}
-              className="grid gap-4 rounded-3xl border border-slate-100 bg-slate-50 p-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
+              className="grid gap-4 rounded-3xl border border-slate-100 bg-[linear-gradient(180deg,_#fff9fb_0%,_#ffffff_100%)] p-5 xl:grid-cols-[minmax(0,1fr)_auto]"
             >
-              <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
-                Clinic
-                <select
-                  value={selectedClinicId}
-                  onChange={onClinicChange}
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
-                >
-                  <option value="">Select a clinic</option>
-                  {clinics.map((clinic) => (
-                    <option key={clinic.id} value={clinic.id}>
-                      {clinic.name} - {clinic.city}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
-                New time slot
-                <input
-                  type="datetime-local"
-                  value={slotDateTime}
-                  onChange={(event) => onSlotDateTimeChange(event.target.value)}
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
-                />
-              </label>
+              <div className="rounded-3xl border border-white bg-white p-4 shadow-[0_12px_30px_rgba(15,23,42,0.04)]">
+                <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+                  New time slot
+                  <input
+                    type="datetime-local"
+                    value={slotDateTime}
+                    onChange={(event) => onSlotDateTimeChange(event.target.value)}
+                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
+                  />
+                </label>
+              </div>
 
               <button
                 type="submit"
                 disabled={isCreatingSlot}
-                className="inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 xl:self-end"
+                className="inline-flex min-h-[52px] items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 xl:self-center"
                 style={{ backgroundColor: "#993556" }}
               >
                 {isCreatingSlot ? "Creating..." : "Add time slot"}
               </button>
 
-              {isLoadingClinics ? <Spinner text="Loading clinics..." /> : null}
+              {isLoadingClinics ? <Spinner text="Loading clinic profile..." /> : null}
 
               {clinicsError ? (
-                <div className="xl:col-span-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                <div className="xl:col-span-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
                   {clinicsError}
                 </div>
               ) : null}
 
               {slotError ? (
-                <div className="xl:col-span-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                <div className="xl:col-span-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
                   {slotError}
                 </div>
               ) : null}
 
               {slotSuccess ? (
-                <div className="xl:col-span-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                <div className="xl:col-span-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
                   {slotSuccess}
                 </div>
               ) : null}
@@ -265,6 +208,9 @@ export default function ClinicInterface({
                     </div>
                     <div className="mt-1 text-sm text-slate-600">
                       {selectedClinic.city}
+                    </div>
+                    <div className="mt-1 text-sm text-slate-500">
+                      {selectedClinic.address}
                     </div>
                   </div>
 
@@ -302,13 +248,55 @@ export default function ClinicInterface({
         <section className="rounded-3xl border border-white/70 bg-white p-6 shadow-[0_20px_50px_rgba(148,163,184,0.12)]">
           <div className="flex flex-col gap-5">
             <div>
+              <div className="inline-flex w-fit rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#993556]">
+                Clinic operations
+              </div>
+              <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900">
+                Review and verify incoming reservations
+              </h1>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {filters.map((filter) => {
+                const isActive = requestFilter === filter.value;
+                return (
+                  <button
+                    key={filter.value}
+                    type="button"
+                    onClick={() => setRequestFilter(filter.value)}
+                    className={`rounded-3xl border p-5 text-left transition duration-200 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 ${getStatusClasses(
+                      filter.status,
+                      isActive
+                    )}`}
+                    aria-pressed={isActive}
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                        {filter.label}
+                      </div>
+                      <div
+                        className={`inline-flex h-8 min-w-[2rem] items-center justify-center rounded-full px-2 text-xs font-semibold ${
+                          isActive
+                            ? "bg-[#993556] text-white"
+                            : "border border-slate-200 bg-slate-50 text-slate-600"
+                        }`}
+                      >
+                        {filter.count}
+                      </div>
+                    </div>
+                    <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
+                      <span>{isActive ? "Selected filter" : "View requests"}</span>
+                      <span aria-hidden="true">→</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div>
               <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
                 Incoming requests
               </h2>
-              <p className="mt-2 text-sm text-slate-500">
-                Showing {requestFilter === "all" ? "all" : requestFilter} reservations
-                currently available in the dashboard.
-              </p>
             </div>
 
             {isLoadingRequests ? <Spinner text="Loading incoming requests..." /> : null}

@@ -1,11 +1,29 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import ClinicLogin from "../../components/clinic/ClinicLogin";
 import ClinicInterface from "../../components/clinic/ClinicInterface";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+const CLINIC_DEMO_ACCOUNTS = {
+  "paris@hervoice.org": {
+    password: "123",
+    city: "Paris",
+    label: "Clinique Santé Paris",
+  },
+  "lyon@hervoice.org": {
+    password: "123",
+    city: "Lyon",
+    label: "Clinique Horizon Lyon",
+  },
+  "marseille@hervoice.org": {
+    password: "123",
+    city: "Marseille",
+    label: "Clinique Marseille",
+  },
+};
 
 const INITIAL_VERIFICATION_FIELDS = {
   lastName: "",
@@ -39,6 +57,7 @@ export default function ClinicPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [loginError, setLoginError] = useState("");
+  const [activeClinicAccount, setActiveClinicAccount] = useState(null);
   const [clinics, setClinics] = useState([]);
   const [clinicsError, setClinicsError] = useState("");
   const [isLoadingClinics, setIsLoadingClinics] = useState(false);
@@ -59,7 +78,7 @@ export default function ClinicPage() {
     INITIAL_VERIFICATION_FIELDS
   );
 
-  async function loadRequests() {
+  const loadRequests = useCallback(async () => {
     setIsLoadingRequests(true);
     setRequestsError("");
 
@@ -79,9 +98,9 @@ export default function ClinicPage() {
     } finally {
       setIsLoadingRequests(false);
     }
-  }
+  }, []);
 
-  async function loadClinics() {
+  const loadClinics = useCallback(async () => {
     setIsLoadingClinics(true);
     setClinicsError("");
 
@@ -95,18 +114,26 @@ export default function ClinicPage() {
 
       setClinics(data);
       setSelectedClinicId((current) => {
+        const targetClinic = activeClinicAccount
+          ? data.find((clinic) => clinic.city === activeClinicAccount.city)
+          : null;
+
+        if (targetClinic) {
+          return targetClinic.id;
+        }
+
         if (current && data.some((clinic) => clinic.id === current)) {
           return current;
         }
 
-        return data[0]?.id || "";
+        return "";
       });
     } catch (error) {
       setClinicsError(error.message || "Unable to load clinics right now.");
     } finally {
       setIsLoadingClinics(false);
     }
-  }
+  }, [activeClinicAccount]);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -115,7 +142,7 @@ export default function ClinicPage() {
 
     loadRequests();
     loadClinics();
-  }, [isLoggedIn]);
+  }, [isLoggedIn, loadClinics, loadRequests]);
 
   const selectedClinic = useMemo(() => {
     return clinics.find((clinic) => clinic.id === selectedClinicId) || null;
@@ -181,18 +208,24 @@ export default function ClinicPage() {
       return;
     }
 
+    const normalizedEmail = credentials.email.trim().toLowerCase();
+    const account = CLINIC_DEMO_ACCOUNTS[normalizedEmail];
+
+    if (!account || credentials.password.trim() !== account.password) {
+      setLoginError("This clinic account is not recognized.");
+      return;
+    }
+
+    setActiveClinicAccount({
+      email: normalizedEmail,
+      ...account,
+    });
     setIsLoggedIn(true);
   }
 
   function handleVerificationFieldChange(event) {
     const { name, value } = event.target;
     setVerificationFields((current) => ({ ...current, [name]: value }));
-  }
-
-  function handleClinicChange(event) {
-    setSelectedClinicId(event.target.value);
-    setSlotError("");
-    setSlotSuccess("");
   }
 
   async function handleCreateSlot(event) {
@@ -322,6 +355,7 @@ export default function ClinicPage() {
       onSignOut={() => {
         setIsLoggedIn(false);
         setCredentials({ email: "", password: "" });
+        setActiveClinicAccount(null);
         setClinics([]);
         setClinicsError("");
         setSelectedClinicId("");
@@ -339,9 +373,8 @@ export default function ClinicPage() {
       clinics={clinics}
       clinicsError={clinicsError}
       isLoadingClinics={isLoadingClinics}
+      activeClinicAccount={activeClinicAccount}
       selectedClinic={selectedClinic}
-      selectedClinicId={selectedClinicId}
-      onClinicChange={handleClinicChange}
       slotDateTime={slotDateTime}
       onSlotDateTimeChange={setSlotDateTime}
       onCreateSlot={handleCreateSlot}
