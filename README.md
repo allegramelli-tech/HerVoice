@@ -41,7 +41,7 @@
 ![React](https://img.shields.io/badge/React_18-993556?style=flat-square&logo=react&logoColor=fff8fa)
 ![Tailwind](https://img.shields.io/badge/Tailwind_CSS-2C2C2A?style=flat-square&logo=tailwind-css&logoColor=fff8fa)
 ![FastAPI](https://img.shields.io/badge/FastAPI-993556?style=flat-square&logo=fastapi&logoColor=fff8fa)
-![Python](https://img.shields.io/badge/Python_3.11-2C2C2A?style=flat-square&logo=python&logoColor=fff8fa)
+![Python](https://img.shields.io/badge/Python_3.9-2C2C2A?style=flat-square&logo=python&logoColor=fff8fa)
 ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-993556?style=flat-square&logo=sqlalchemy&logoColor=fff8fa)
 ![SQLite](https://img.shields.io/badge/SQLite-2C2C2A?style=flat-square&logo=sqlite&logoColor=fff8fa)
 ![XRPL](https://img.shields.io/badge/XRPL_Testnet-993556?style=flat-square&logo=ripple&logoColor=fff8fa)
