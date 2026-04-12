@@ -4,24 +4,6 @@ import BrandLogo from "../BrandLogo";
 
 const BRAND_COLOR = "#993556";
 
-function getStatusClasses(status) {
-  if (status === "released") {
-    return "border-teal-200 bg-teal-50 text-teal-700";
-  }
-
-  if (status === "confirmed") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  }
-
-  return "border-amber-200 bg-amber-50 text-amber-700";
-}
-
-function formatStatusLabel(status) {
-  if (status === "released") return "Released";
-  if (status === "confirmed") return "Confirmed";
-  return "Pending";
-}
-
 function DashboardSpinner({ text = "Loading dashboard data..." }) {
   return (
     <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm">
@@ -31,39 +13,21 @@ function DashboardSpinner({ text = "Loading dashboard data..." }) {
   );
 }
 
-function MetricCard({ label, value, subtle = false }) {
+function MetricCard({ label, value, hint }) {
   return (
-    <div
-      className={`rounded-3xl border p-5 ${
-        subtle
-          ? "border-slate-100 bg-[linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)]"
-          : "border-rose-100 bg-[linear-gradient(180deg,_#fff9fb_0%,_#ffffff_100%)] shadow-[0_12px_30px_rgba(153,53,86,0.06)]"
-      }`}
-    >
-      <div className="flex items-center gap-2">
-        <span
-          className={`h-2.5 w-2.5 rounded-full ${
-            subtle ? "bg-slate-300" : "bg-[#993556]"
-          }`}
-        />
-        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-          {label}
-        </div>
+    <div className="rounded-3xl border border-slate-100 bg-[linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)] p-5">
+      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+        {label}
       </div>
-      <div className="mt-4 text-[2rem] font-semibold leading-none tracking-tight text-slate-900 sm:text-3xl">
+      <div className="mt-3 text-[2rem] font-semibold leading-none tracking-tight text-slate-900 sm:text-3xl">
         {value}
       </div>
+      <div className="mt-3 text-sm text-slate-500">{hint}</div>
     </div>
   );
 }
 
-function DonutChartCard({
-  title,
-  value,
-  total,
-  segments,
-  highlightLabel,
-}) {
+function DonutChartCard({ title, value, total, segments, highlightLabel }) {
   const safeTotal = Math.max(total || 0, 0);
   const safeValue = Math.max(value || 0, 0);
   const percentage =
@@ -73,11 +37,10 @@ function DonutChartCard({
   let currentOffset = 0;
 
   segments.forEach((segment) => {
-    const portion = safeTotal > 0 ? (Math.max(segment.value, 0) / safeTotal) * 100 : 0;
+    const portion =
+      safeTotal > 0 ? (Math.max(segment.value, 0) / safeTotal) * 100 : 0;
     const nextOffset = currentOffset + portion;
-    gradientStops.push(
-      `${segment.color} ${currentOffset}% ${nextOffset}%`
-    );
+    gradientStops.push(`${segment.color} ${currentOffset}% ${nextOffset}%`);
     currentOffset = nextOffset;
   });
 
@@ -112,7 +75,7 @@ function DonutChartCard({
             background: `conic-gradient(${gradientStops.join(", ")})`,
           }}
         >
-          <div className="absolute inset-[16px] rounded-full bg-white" />
+          <div className="absolute inset-[14px] rounded-full bg-white" />
         </div>
 
         <div className="grid w-full gap-3 text-sm sm:grid-cols-2">
@@ -139,23 +102,31 @@ function DonutChartCard({
             </div>
           ))}
         </div>
-
       </div>
     </div>
   );
 }
 
-function formatAppointmentStatus(status) {
-  if (!status) return "Unknown";
+function formatStatusLabel(status) {
+  if (status === "released") return "Released";
+  if (status === "confirmed") return "Confirmed";
+  return "Pending";
+}
 
-  return status
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+function getStatusClasses(status) {
+  if (status === "released") {
+    return "border-teal-200 bg-teal-50 text-teal-700";
+  }
+
+  if (status === "confirmed") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  }
+
+  return "border-amber-200 bg-amber-50 text-amber-700";
 }
 
 function formatDateTime(value) {
-  if (!value) return "Date unavailable";
+  if (!value) return "Unavailable";
 
   const date = new Date(value);
 
@@ -169,16 +140,6 @@ function formatDateTime(value) {
   }).format(date);
 }
 
-function formatCompactId(value) {
-  if (!value) return "Unavailable";
-
-  if (value.length <= 18) {
-    return value;
-  }
-
-  return `${value.slice(0, 8)}...${value.slice(-6)}`;
-}
-
 export default function FunderDashboard({
   onSignOut,
   isLoading,
@@ -186,33 +147,16 @@ export default function FunderDashboard({
   createError,
   dashboard,
   confirmedCount,
-  clinics,
-  clinicsError,
-  isLoadingClinics,
-  selectedClinicId,
-  selectedClinic,
-  appointments,
-  appointmentsError,
-  isLoadingAppointments,
-  selectedAppointmentId,
-  setSelectedAppointmentId,
-  selectedFundingCaseId,
-  setSelectedFundingCaseId,
-  linkableFundingCases,
-  linkError,
-  linkSuccess,
-  isLinking,
-  amountInput,
-  setAmountInput,
+  selectedCase,
+  selectedCaseId,
+  setSelectedCaseId,
+  fundableCases,
   onCreateFundingCase,
-  onClinicChange,
-  onLinkFunding,
   isCreating,
   createdCase,
   statusFilter,
   setStatusFilter,
-  groupedCases,
-  formatAnonymousId,
+  filteredCases,
   getUiStatus,
 }) {
   const totalReservations = dashboard?.total_cases ?? 0;
@@ -221,9 +165,12 @@ export default function FunderDashboard({
     totalReservations - confirmedReservations,
     0
   );
-  const totalAppointments = dashboard?.total_appointments ?? 0;
+  const totalBookedAppointments = dashboard?.total_booked_appointments ?? 0;
   const completedAppointments = dashboard?.total_completed_appointments ?? 0;
-  const openAppointments = Math.max(totalAppointments - completedAppointments, 0);
+  const openAppointments = Math.max(
+    totalBookedAppointments - completedAppointments,
+    0
+  );
 
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,_#fff8fa_0%,_#f8fafc_48%,_#ffffff_100%)]">
@@ -239,7 +186,9 @@ export default function FunderDashboard({
               <div className="mt-1 text-sm font-semibold text-slate-900">
                 HerVoice Funding Network
               </div>
-              <div className="mt-1 text-xs text-slate-500">Verified government account</div>
+              <div className="mt-1 text-xs text-slate-500">
+                Verified government account
+              </div>
             </div>
 
             <button
@@ -276,44 +225,42 @@ export default function FunderDashboard({
                   Funding overview
                 </div>
                 <p className="mt-3 text-sm text-slate-500">
-                  A quick view of current funding volume and confirmation progress.
+                  A quick view of current funding volume and reservation confirmation progress.
                 </p>
               </div>
 
-              <div className="flex flex-col gap-4">
-                <DonutChartCard
-                  title="Confirmation share"
-                  value={confirmedReservations}
-                  total={totalReservations}
-                  highlightLabel="already confirmed"
-                  segments={[
-                    {
-                      key: "confirmed",
-                      label: "Confirmed",
-                      value: confirmedReservations,
-                      color: "#993556",
-                    },
-                    {
-                      key: "remaining",
-                      label: "Remaining",
-                      value: pendingReservations,
-                      color: "#f2d6e1",
-                    },
-                  ]}
-                />
+              <DonutChartCard
+                title="Confirmation share"
+                value={confirmedReservations}
+                total={totalReservations}
+                highlightLabel="already funded"
+                segments={[
+                  {
+                    key: "confirmed",
+                    label: "Confirmed",
+                    value: confirmedReservations,
+                    color: "#993556",
+                  },
+                  {
+                    key: "remaining",
+                    label: "Pending",
+                    value: pendingReservations,
+                    color: "#f2d6e1",
+                  },
+                ]}
+              />
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <MetricCard
-                    label="EUR committed"
-                    value={`${dashboard?.total_xrp_locked ?? 0} EUR`}
-                    subtle
-                  />
-                  <MetricCard
-                    label="EUR released"
-                    value={`${dashboard?.total_xrp_released ?? 0} EUR`}
-                    subtle
-                  />
-                </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <MetricCard
+                  label="EUR committed"
+                  value={`${dashboard?.total_xrp_locked ?? 0} EUR`}
+                  hint="Locked in active cases."
+                />
+                <MetricCard
+                  label="EUR released"
+                  value={`${dashboard?.total_xrp_released ?? 0} EUR`}
+                  hint="Already paid out to clinics."
+                />
               </div>
             </div>
           </div>
@@ -325,111 +272,147 @@ export default function FunderDashboard({
                   Care operations
                 </div>
                 <p className="mt-3 text-sm text-slate-500">
-                  Live counts across clinics, patients, and appointment activity.
+                  Live counts across clinics, slots, and appointment activity.
                 </p>
               </div>
 
-              <div className="flex flex-col gap-4">
-                <DonutChartCard
-                  title="Completion share"
-                  value={completedAppointments}
-                  total={totalAppointments}
-                  highlightLabel="already completed"
-                  segments={[
-                    {
-                      key: "completed",
-                      label: "Completed",
-                      value: completedAppointments,
-                      color: "#2C2C2A",
-                    },
-                    {
-                      key: "open",
-                      label: "Open",
-                      value: openAppointments,
-                      color: "#e2e8f0",
-                    },
-                  ]}
-                />
+              <DonutChartCard
+                title="Completion share"
+                value={completedAppointments}
+                total={totalBookedAppointments}
+                highlightLabel="already completed"
+                segments={[
+                  {
+                    key: "completed",
+                    label: "Completed",
+                    value: completedAppointments,
+                    color: "#2C2C2A",
+                  },
+                  {
+                    key: "open",
+                    label: "Open",
+                    value: openAppointments,
+                    color: "#e2e8f0",
+                  },
+                ]}
+              />
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <MetricCard
-                    label="Clinics"
-                    value={dashboard?.total_clinics ?? 0}
-                    subtle
-                  />
-                  <MetricCard
-                    label="Patients"
-                    value={dashboard?.total_patient_cases ?? 0}
-                    subtle
-                  />
-                </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <MetricCard
+                  label="Clinics"
+                  value={dashboard?.total_clinics ?? 0}
+                  hint="Verified care providers in the network."
+                />
+                <MetricCard
+                  label="Clinic slots"
+                  value={dashboard?.total_slots ?? 0}
+                  hint="Open and booked times across partner clinics."
+                />
               </div>
             </div>
           </div>
         </section>
 
         <section className="rounded-3xl border border-white/70 bg-white p-6 shadow-[0_20px_50px_rgba(148,163,184,0.12)]">
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-5">
             <div className="flex flex-col gap-2">
               <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
                 Funding cases
               </h1>
               <p className="text-sm text-slate-500">
-                Create new funding, link it to booked appointments, and then review the active case
-                list below.
+                Select a pending reservation, then lock support funds for that case on XRPL.
               </p>
             </div>
 
             <form
               onSubmit={onCreateFundingCase}
-              className="grid gap-3 rounded-3xl border border-slate-100 bg-slate-50 p-4 md:grid-cols-[1fr_auto]"
+              className="grid gap-4 rounded-3xl border border-slate-100 bg-slate-50 p-5 xl:grid-cols-[minmax(0,1fr)_auto]"
             >
-              <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-                <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
-                  Amount in EUR
-                  <input
-                    type="number"
-                    min="1"
-                    max="1000"
-                    step="1"
-                    value={amountInput}
-                    onChange={(event) => setAmountInput(event.target.value)}
-                    className="rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
-                    placeholder="5"
-                  />
-                </label>
-                <button
-                  type="submit"
-                  disabled={isCreating}
-                  className="mt-auto inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-                  style={{ backgroundColor: BRAND_COLOR }}
-                >
-                  Create funding case
-                </button>
+              <div className="rounded-3xl border border-white bg-white p-5">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  Selected reservation
+                </div>
+
+                {selectedCase ? (
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                        Reservation ID
+                      </div>
+                      <div className="mt-2 break-all font-mono text-sm text-slate-900">
+                        {selectedCase.patient_hash || selectedCase.case_id}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                        Amount
+                      </div>
+                      <div className="mt-2 text-sm font-semibold text-slate-900">
+                        {selectedCase.amount_xrp} EUR
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                        Clinic
+                      </div>
+                      <div className="mt-2 text-sm text-slate-900">
+                        {selectedCase.clinic_name || "Clinic unavailable"}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                        Appointment
+                      </div>
+                      <div className="mt-2 text-sm text-slate-900">
+                        {formatDateTime(selectedCase.slot_datetime)}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-4 rounded-2xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-500">
+                    Choose a pending reservation from the case list below.
+                  </div>
+                )}
               </div>
 
+              <button
+                type="submit"
+                disabled={
+                  isCreating ||
+                  !selectedCase ||
+                  getUiStatus(selectedCase) !== "pending"
+                }
+                className="inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 xl:self-center"
+                style={{ backgroundColor: BRAND_COLOR }}
+              >
+                {isCreating ? "Locking funds..." : "Create funding case"}
+              </button>
+
               {isCreating ? (
-                <div className="md:col-span-2">
+                <div className="xl:col-span-2">
                   <DashboardSpinner text="Creating funding case..." />
                 </div>
               ) : null}
 
               {createdCase ? (
-                <div className="grid gap-4 rounded-3xl border border-emerald-200 bg-emerald-50 p-5 text-sm md:col-span-2 md:grid-cols-2">
+                <div className="grid gap-4 rounded-3xl border border-emerald-200 bg-emerald-50 p-5 text-sm xl:col-span-2 md:grid-cols-2">
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                      Reservation ID
+                    </div>
+                    <div className="mt-2 break-all font-mono text-emerald-950">
+                      {createdCase.patient_hash || createdCase.case_id}
+                    </div>
+                  </div>
                   <div>
                     <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
                       Case ID
                     </div>
                     <div className="mt-2 break-all font-mono text-emerald-950">
                       {createdCase.case_id}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                      Verification key
-                    </div>
-                    <div className="mt-2 break-all font-mono text-emerald-950">
-                      {createdCase.voucher_id}
                     </div>
                   </div>
                   <div>
@@ -444,7 +427,25 @@ export default function FunderDashboard({
                     <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
                       Status
                     </div>
-                    <div className="mt-2 font-semibold text-emerald-950">{createdCase.status}</div>
+                    <div className="mt-2 font-semibold text-emerald-950">
+                      {formatStatusLabel(getUiStatus(createdCase))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                      Clinic
+                    </div>
+                    <div className="mt-2 font-medium text-emerald-950">
+                      {createdCase.clinic_name || "Clinic unavailable"}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                      Appointment
+                    </div>
+                    <div className="mt-2 font-medium text-emerald-950">
+                      {formatDateTime(createdCase.slot_datetime)}
+                    </div>
                   </div>
                   <div className="md:col-span-2">
                     <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
@@ -459,400 +460,149 @@ export default function FunderDashboard({
             </form>
           </div>
 
-          <div className="mt-6 flex flex-col gap-6">
-            <section className="rounded-3xl border border-slate-100 bg-slate-50 p-5">
-              <div className="flex flex-col gap-2">
+          <div className="mt-6 rounded-3xl border border-slate-100 bg-slate-50 p-5">
+            <div className="flex flex-col gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
                 <h2 className="text-lg font-semibold tracking-tight text-slate-900">
-                  Link funding to a clinic appointment
+                  Case list
                 </h2>
-                <p className="text-sm text-slate-500">
-                  Attach an existing funding case to a booked appointment before the clinic confirms
-                  care.
+                <p className="mt-1 text-sm text-slate-500">
+                  Review all reservations and select one to fund.
                 </p>
               </div>
 
-              <form
-                onSubmit={onLinkFunding}
-                className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]"
-              >
-                <div className="space-y-4 rounded-3xl border border-white bg-white p-5">
-                  <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
-                    Choose clinic
-                    <select
-                      value={selectedClinicId}
-                      onChange={onClinicChange}
-                      className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
+              <div className="flex flex-wrap gap-3">
+                {[
+                  ["all", "All"],
+                  ["pending", "Pending"],
+                  ["confirmed", "Confirmed"],
+                  ["released", "Released"],
+                ].map(([value, label]) => {
+                  const isActive = statusFilter === value;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setStatusFilter(value)}
+                      className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                        isActive
+                          ? "text-white"
+                          : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                      }`}
+                      style={isActive ? { backgroundColor: BRAND_COLOR } : {}}
                     >
-                      <option value="">Select a clinic</option>
-                      {clinics.map((clinic) => (
-                        <option key={clinic.id} value={clinic.id}>
-                          {clinic.name} - {clinic.city}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  {selectedClinic ? (
-                    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-600">
-                      <div className="font-semibold text-slate-900">{selectedClinic.name}</div>
-                      <div className="mt-1">{selectedClinic.doctor_name}</div>
-                      <div className="mt-1">
-                        {selectedClinic.address}, {selectedClinic.city}
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {isLoadingClinics ? <DashboardSpinner text="Loading clinics..." /> : null}
-
-                  {clinicsError ? (
-                    <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
-                      {clinicsError}
-                    </div>
-                  ) : null}
-
-                  <div className="space-y-3">
-                    <div className="text-sm font-medium text-slate-700">Appointments</div>
-
-                    {isLoadingAppointments ? (
-                      <DashboardSpinner text="Loading clinic appointments..." />
-                    ) : null}
-
-                    {!isLoadingAppointments && appointmentsError ? (
-                      <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
-                        {appointmentsError}
-                      </div>
-                    ) : null}
-
-                    {!isLoadingAppointments &&
-                    !appointmentsError &&
-                    selectedClinicId &&
-                    !appointments.length ? (
-                      <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-500">
-                        No appointments found for this clinic yet.
-                      </div>
-                    ) : null}
-
-                    {!isLoadingAppointments && appointments.length ? (
-                      <div className="space-y-3">
-                        {appointments.map((appointment) => {
-                          const isSelected = selectedAppointmentId === appointment.appointment_id;
-                          const isLinked = Boolean(appointment.funding_case_id);
-                          const wasJustLinked =
-                            Boolean(linkSuccess) &&
-                            appointment.funding_case_id === selectedFundingCaseId;
-
-                          return (
-                            <button
-                              key={appointment.appointment_id}
-                              type="button"
-                              onClick={() => setSelectedAppointmentId(appointment.appointment_id)}
-                              className={`w-full rounded-3xl border px-4 py-4 text-left transition ${
-                                wasJustLinked
-                                  ? "border-emerald-300 bg-emerald-50/70 shadow-[0_12px_30px_rgba(16,185,129,0.10)]"
-                                  : isSelected
-                                    ? "border-rose-300 bg-rose-50"
-                                    : "border-slate-200 bg-white hover:border-slate-300"
-                              }`}
-                            >
-                              <div className="flex flex-wrap items-start justify-between gap-3">
-                                <div>
-                                  <div className="text-sm font-semibold text-slate-900">
-                                    {formatDateTime(appointment.slot_datetime)}
-                                  </div>
-                                  <div className="mt-1 font-mono text-xs text-slate-500">
-                                    Appointment ID: {appointment.appointment_id}
-                                  </div>
-                                  <div className="mt-1 font-mono text-xs text-slate-500">
-                                    Patient case: {appointment.patient_case_id}
-                                  </div>
-                                </div>
-
-                                <div className="flex flex-col items-end gap-2">
-                                  <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
-                                    {formatAppointmentStatus(appointment.status)}
-                                  </span>
-                                  <span
-                                    className={`rounded-full border px-3 py-1 text-xs font-semibold ${
-                                      isLinked
-                                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                                        : "border-amber-200 bg-amber-50 text-amber-700"
-                                    }`}
-                                  >
-                                    {isLinked ? "Funding linked" : "Funding missing"}
-                                  </span>
-                                </div>
-                              </div>
-
-                              {isLinked ? (
-                                <div className="mt-3 rounded-2xl border border-emerald-100 bg-white/80 px-4 py-3">
-                                  {wasJustLinked ? (
-                                    <div className="mb-3 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                                      Funding linked successfully
-                                    </div>
-                                  ) : null}
-
-                                  <div className="flex flex-wrap items-start justify-between gap-3">
-                                    <div>
-                                      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                                        Linked funding case
-                                      </div>
-                                      <div className="mt-2 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                                        {formatAnonymousId(appointment.funding_case_id)}
-                                      </div>
-                                    </div>
-
-                                    <div className="min-w-0 flex-1 text-left sm:text-right">
-                                      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                                        Case reference
-                                      </div>
-                                      <div
-                                        className="mt-2 break-all font-mono text-xs text-slate-600"
-                                        title={appointment.funding_case_id}
-                                      >
-                                        {formatCompactId(appointment.funding_case_id)}
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="mt-3 text-xs text-slate-500">
-                                  This appointment still needs a funding case.
-                                </div>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-
-                <div className="space-y-4 rounded-3xl border border-white bg-white p-5">
-                  <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
-                    Choose funding case
-                    <select
-                      value={selectedFundingCaseId}
-                      onChange={(event) => setSelectedFundingCaseId(event.target.value)}
-                      className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
-                    >
-                      <option value="">Select a funding case</option>
-                      {linkableFundingCases.map((caseItem) => (
-                        <option key={caseItem.case_id} value={caseItem.case_id}>
-                          {caseItem.amount_xrp} EUR - {formatStatusLabel(getUiStatus(caseItem))} -{" "}
-                          {formatAnonymousId(caseItem.case_id)}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  {linkableFundingCases.length ? null : (
-                    <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-500">
-                      Create a funding case first to link it to an appointment.
-                    </div>
-                  )}
-
-                  {linkError ? (
-                    <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
-                      {linkError}
-                    </div>
-                  ) : null}
-
-                  {linkSuccess ? (
-                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-                      {linkSuccess}
-                    </div>
-                  ) : null}
-
-                  <button
-                    type="submit"
-                    disabled={
-                      isLinking ||
-                      !selectedClinicId ||
-                      !selectedAppointmentId ||
-                      !selectedFundingCaseId
-                    }
-                    className="inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-                    style={{ backgroundColor: BRAND_COLOR }}
-                  >
-                    {isLinking ? "Linking funding..." : "Link funding case"}
-                  </button>
-                </div>
-              </form>
-            </section>
-
-            <section className="rounded-3xl border border-slate-100 bg-slate-50 p-5">
-              <div className="flex flex-col gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold tracking-tight text-slate-900">Case list</h2>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Filter and review funding cases across the network.
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap gap-3">
-                  {[
-                    ["all", "All"],
-                    ["pending", "Pending"],
-                    ["confirmed", "Confirmed"],
-                    ["released", "Released"],
-                  ].map(([value, label]) => {
-                    const isActive = statusFilter === value;
-                    return (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() => setStatusFilter(value)}
-                        className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                          isActive
-                            ? "text-white"
-                            : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                        }`}
-                        style={isActive ? { backgroundColor: BRAND_COLOR } : {}}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
+            </div>
 
-              <div className="mt-5 flex flex-col gap-6">
-                {groupedCases.length ? (
-                  groupedCases.map(([country, cases]) => (
-                    <div key={country} className="rounded-3xl border border-slate-100">
-                      <div className="border-b border-slate-100 bg-slate-50 px-5 py-4">
-                    <div className="text-sm font-semibold text-slate-900">{country}</div>
-                      </div>
+            <div className="mt-5 grid gap-4">
+              {filteredCases.length ? (
+                filteredCases.map((caseItem) => {
+                  const status = getUiStatus(caseItem);
+                  const isSelected = selectedCaseId === caseItem.case_id;
+                  const isFundable = fundableCases.some(
+                    (fundableCase) => fundableCase.case_id === caseItem.case_id
+                  );
 
-                      <div className="space-y-3 px-4 py-4 md:hidden">
-                        {cases.map((caseItem) => {
-                          const status = getUiStatus(caseItem);
-                          const clinicConfirmed =
-                            caseItem.case_status === "released" ||
-                            caseItem.voucher_status === "redeemed";
-
-                          return (
-                            <div
-                              key={caseItem.case_id}
-                              className="rounded-2xl border border-slate-100 bg-white p-4"
-                            >
-                              <div className="flex flex-col gap-3">
-                                <div>
-                                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                                    Reservation ID
-                                  </div>
-                                  <div className="mt-1 break-all font-mono text-sm text-slate-900">
-                                    {caseItem.case_id}
-                                  </div>
-                                </div>
-
-                                <div className="grid gap-3 sm:grid-cols-2">
-                                  <div>
-                                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                                      Reservation date
-                                    </div>
-                                    <div className="mt-1 text-sm text-slate-600">
-                                      {formatDateTime(caseItem.created_at)}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                                      Amount
-                                    </div>
-                                    <div className="mt-1 text-sm font-medium text-slate-900">
-                                      {caseItem.amount_xrp} EUR
-                                    </div>
-                                  </div>
-                                </div>
-
-                                <div className="flex flex-wrap gap-2">
-                                  <span
-                                    className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${getStatusClasses(
-                                      status
-                                    )}`}
-                                  >
-                                    {formatStatusLabel(status)}
-                                  </span>
-                                  <span
-                                    className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${
-                                      clinicConfirmed
-                                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                                        : "border-slate-200 bg-slate-50 text-slate-600"
-                                    }`}
-                                  >
-                                    {clinicConfirmed ? "Clinic confirmed" : "Clinic pending"}
-                                  </span>
-                                </div>
-                              </div>
+                  return (
+                    <button
+                      key={caseItem.case_id}
+                      type="button"
+                      onClick={() => setSelectedCaseId(caseItem.case_id)}
+                      className={`rounded-3xl border p-5 text-left transition ${
+                        isSelected
+                          ? "border-rose-300 bg-rose-50 shadow-[0_12px_30px_rgba(153,53,86,0.10)]"
+                          : "border-slate-100 bg-white hover:border-slate-200 hover:bg-slate-50/80"
+                      }`}
+                    >
+                      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="grid flex-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                          <div>
+                            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                              Reservation ID
                             </div>
-                          );
-                        })}
-                      </div>
+                            <div className="mt-2 break-all font-mono text-sm text-slate-900">
+                              {caseItem.patient_hash || caseItem.case_id}
+                            </div>
+                          </div>
 
-                      <div className="hidden overflow-x-auto md:block">
-                        <table className="min-w-full divide-y divide-slate-100 text-left">
-                          <thead className="bg-white">
-                            <tr className="text-xs uppercase tracking-[0.18em] text-slate-400">
-                              <th className="px-5 py-4 font-semibold">Reservation ID</th>
-                              <th className="px-5 py-4 font-semibold">Reservation date</th>
-                              <th className="px-5 py-4 font-semibold">Amount</th>
-                              <th className="px-5 py-4 font-semibold">Status</th>
-                              <th className="px-5 py-4 font-semibold">Clinic confirmed</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100 bg-white text-sm text-slate-700">
-                            {cases.map((caseItem) => {
-                              const status = getUiStatus(caseItem);
-                              const clinicConfirmed =
-                                caseItem.case_status === "released" ||
-                                caseItem.voucher_status === "redeemed";
+                          <div>
+                            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                              Reservation date
+                            </div>
+                            <div className="mt-2 text-sm font-medium text-slate-900">
+                              {formatDateTime(caseItem.created_at)}
+                            </div>
+                          </div>
 
-                              return (
-                                <tr key={caseItem.case_id}>
-                                  <td className="px-5 py-4 font-mono text-xs text-slate-900">
-                                    <span className="break-all">{caseItem.case_id}</span>
-                                  </td>
-                                  <td className="px-5 py-4 text-sm text-slate-600">
-                                    {formatDateTime(caseItem.created_at)}
-                                  </td>
-                                  <td className="px-5 py-4 font-medium text-slate-900">
-                                    {caseItem.amount_xrp} EUR
-                                  </td>
-                                  <td className="px-5 py-4">
-                                    <span
-                                      className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${getStatusClasses(
-                                        status
-                                      )}`}
-                                    >
-                                      {formatStatusLabel(status)}
-                                    </span>
-                                  </td>
-                                  <td className="px-5 py-4">
-                                    <span
-                                      className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${
-                                        clinicConfirmed
-                                          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                                          : "border-slate-200 bg-slate-50 text-slate-600"
-                                      }`}
-                                    >
-                                      {clinicConfirmed ? "Yes" : "No"}
-                                    </span>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
+                          <div>
+                            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                              Appointment
+                            </div>
+                            <div className="mt-2 text-sm font-medium text-slate-900">
+                              {formatDateTime(caseItem.slot_datetime)}
+                            </div>
+                          </div>
+
+                          <div>
+                            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                              Clinic
+                            </div>
+                            <div className="mt-2 text-sm font-medium text-slate-900">
+                              {caseItem.clinic_name || "Clinic unavailable"}
+                            </div>
+                          </div>
+
+                          <div>
+                            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                              Amount
+                            </div>
+                            <div className="mt-2 text-sm font-semibold text-slate-900">
+                              {caseItem.amount_xrp} EUR
+                            </div>
+                          </div>
+
+                          <div>
+                            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                              Case reference
+                            </div>
+                            <div className="mt-2 break-all font-mono text-xs text-slate-500">
+                              {caseItem.case_id}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span
+                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${getStatusClasses(
+                              status
+                            )}`}
+                          >
+                            {formatStatusLabel(status)}
+                          </span>
+                          <span
+                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${
+                              isFundable
+                                ? "border-rose-200 bg-rose-50 text-rose-700"
+                                : "border-slate-200 bg-slate-50 text-slate-600"
+                            }`}
+                          >
+                            {isFundable ? "Ready to fund" : "Already processed"}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500">
-                    No funding cases match this filter yet.
-                  </div>
-                )}
-              </div>
-            </section>
+                    </button>
+                  );
+                })
+              ) : (
+                <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500">
+                  No funding cases match this filter yet.
+                </div>
+              )}
+            </div>
           </div>
         </section>
       </div>

@@ -15,22 +15,38 @@ const INITIAL_VERIFICATION_FIELDS = {
 };
 
 function getUiStatus(caseItem) {
-  if (caseItem.case_status === "released") {
+  const status = String(caseItem?.status || "").toLowerCase();
+
+  if (status === "released") {
     return "Released";
   }
 
-  if (caseItem.case_status === "active") {
+  if (status === "active") {
     return "Confirmed";
   }
 
   return "Pending";
 }
 
+function getApiError(data, fallbackMessage) {
+  if (typeof data?.detail === "string") return data.detail;
+  if (typeof data?.detail?.detail === "string") return data.detail.detail;
+  if (typeof data?.message === "string") return data.message;
+  return fallbackMessage;
+}
+
 export default function ClinicPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [loginError, setLoginError] = useState("");
-  const [voucherId, setVoucherId] = useState("");
+  const [clinics, setClinics] = useState([]);
+  const [clinicsError, setClinicsError] = useState("");
+  const [isLoadingClinics, setIsLoadingClinics] = useState(false);
+  const [selectedClinicId, setSelectedClinicId] = useState("");
+  const [slotDateTime, setSlotDateTime] = useState("");
+  const [slotError, setSlotError] = useState("");
+  const [slotSuccess, setSlotSuccess] = useState("");
+  const [isCreatingSlot, setIsCreatingSlot] = useState(false);
   const [verification, setVerification] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [actionError, setActionError] = useState("");
@@ -43,39 +59,79 @@ export default function ClinicPage() {
     INITIAL_VERIFICATION_FIELDS
   );
 
+  async function loadRequests() {
+    setIsLoadingRequests(true);
+    setRequestsError("");
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/dashboard`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(getApiError(data, "Unable to load clinic requests."));
+      }
+
+      setDashboard(data);
+    } catch (error) {
+      setRequestsError(
+        error.message || "Unable to load incoming requests right now."
+      );
+    } finally {
+      setIsLoadingRequests(false);
+    }
+  }
+
+  async function loadClinics() {
+    setIsLoadingClinics(true);
+    setClinicsError("");
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/clinics`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(getApiError(data, "Unable to load clinics."));
+      }
+
+      setClinics(data);
+      setSelectedClinicId((current) => {
+        if (current && data.some((clinic) => clinic.id === current)) {
+          return current;
+        }
+
+        return data[0]?.id || "";
+      });
+    } catch (error) {
+      setClinicsError(error.message || "Unable to load clinics right now.");
+    } finally {
+      setIsLoadingClinics(false);
+    }
+  }
+
   useEffect(() => {
     if (!isLoggedIn) {
       return;
     }
 
-    async function loadRequests() {
-      setIsLoadingRequests(true);
-      setRequestsError("");
-
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/dashboard`);
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.detail || "Unable to load clinic requests.");
-        }
-
-        setDashboard(data);
-      } catch (error) {
-        setRequestsError(
-          error.message || "Unable to load incoming requests right now."
-        );
-      } finally {
-        setIsLoadingRequests(false);
-      }
-    }
-
     loadRequests();
+    loadClinics();
   }, [isLoggedIn]);
 
+  const selectedClinic = useMemo(() => {
+    return clinics.find((clinic) => clinic.id === selectedClinicId) || null;
+  }, [clinics, selectedClinicId]);
+
   const incomingRequests = useMemo(() => {
-    return (dashboard?.cases || []).filter((caseItem) => caseItem.voucher_id);
-  }, [dashboard]);
+    const requests = (dashboard?.cases || []).filter((caseItem) => caseItem.appointment_id);
+
+    if (!selectedClinic) {
+      return requests;
+    }
+
+    return requests.filter(
+      (caseItem) => caseItem.clinic_name === selectedClinic.name
+    );
+  }, [dashboard, selectedClinic]);
 
   const filteredRequests = useMemo(() => {
     if (requestFilter === "all") {
@@ -88,7 +144,10 @@ export default function ClinicPage() {
   }, [incomingRequests, requestFilter]);
 
   const selectedRequest = useMemo(() => {
-    return incomingRequests.find((caseItem) => caseItem.case_id === selectedRequestId) || null;
+    return (
+      incomingRequests.find((caseItem) => caseItem.case_id === selectedRequestId) ||
+      null
+    );
   }, [incomingRequests, selectedRequestId]);
 
   useEffect(() => {
@@ -102,7 +161,6 @@ export default function ClinicPage() {
 
     if (!isVisible) {
       setSelectedRequestId("");
-      setVoucherId("");
       setVerification(null);
       setActionError("");
       setVerificationFields(INITIAL_VERIFICATION_FIELDS);
@@ -131,9 +189,58 @@ export default function ClinicPage() {
     setVerificationFields((current) => ({ ...current, [name]: value }));
   }
 
+  function handleClinicChange(event) {
+    setSelectedClinicId(event.target.value);
+    setSlotError("");
+    setSlotSuccess("");
+  }
+
+  async function handleCreateSlot(event) {
+    event.preventDefault();
+    setSlotError("");
+    setSlotSuccess("");
+
+    if (!selectedClinicId) {
+      setSlotError("Choose a clinic before creating a time slot.");
+      return;
+    }
+
+    if (!slotDateTime) {
+      setSlotError("Choose a date and time for the new slot.");
+      return;
+    }
+
+    setIsCreatingSlot(true);
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/clinics/${selectedClinicId}/slots`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ slot_datetime: slotDateTime }),
+        }
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(getApiError(data, "Unable to create a new time slot."));
+      }
+
+      setSlotSuccess("Time slot created successfully.");
+      setSlotDateTime("");
+      await Promise.all([loadClinics(), loadRequests()]);
+    } catch (error) {
+      setSlotError(error.message || "Unable to create a new time slot.");
+    } finally {
+      setIsCreatingSlot(false);
+    }
+  }
+
   function handleSelectRequest(request) {
     setSelectedRequestId(request.case_id);
-    setVoucherId(request.voucher_id || "");
     setVerification(null);
     setActionError("");
     setVerificationFields(INITIAL_VERIFICATION_FIELDS);
@@ -159,45 +266,37 @@ export default function ClinicPage() {
       return;
     }
 
-    if (!voucherId.trim()) {
-      setActionError("This reservation is missing a verification key.");
-      return;
-    }
-
     setIsVerifying(true);
 
     try {
-      const verifyResponse = await fetch(`${API_BASE_URL}/api/clinic/verify`, {
+      const response = await fetch(`${API_BASE_URL}/api/clinic/verify-and-release`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ voucher_id: voucherId.trim() }),
+        body: JSON.stringify({
+          patient_identity: {
+            name: `${verificationFields.firstName.trim()} ${verificationFields.lastName.trim()}`.trim(),
+            date_of_birth: verificationFields.birthDate,
+            insurance_number: verificationFields.insuranceNumber.trim(),
+          },
+        }),
       });
 
-      const verifyData = await verifyResponse.json();
+      const data = await response.json();
 
-      if (!verifyResponse.ok) {
+      if (!response.ok) {
         throw new Error(
-          verifyData.detail || verifyData.message || "Unable to verify reservation."
+          getApiError(data, "Unable to verify and release this reservation.")
         );
       }
 
-      let caseId = null;
+      setVerification(data);
+      await loadRequests();
 
-      const voucherResponse = await fetch(
-        `${API_BASE_URL}/api/voucher/${encodeURIComponent(voucherId.trim())}`
-      );
-
-      if (voucherResponse.ok) {
-        const voucherData = await voucherResponse.json();
-        caseId = voucherData.funding_case_id;
+      if (data.case_id) {
+        setSelectedRequestId(data.case_id);
       }
-
-      setVerification({
-        ...verifyData,
-        case_id: caseId,
-      });
     } catch (error) {
       setActionError(
         error.message || "Unable to verify this reservation right now."
@@ -223,7 +322,12 @@ export default function ClinicPage() {
       onSignOut={() => {
         setIsLoggedIn(false);
         setCredentials({ email: "", password: "" });
-        setVoucherId("");
+        setClinics([]);
+        setClinicsError("");
+        setSelectedClinicId("");
+        setSlotDateTime("");
+        setSlotError("");
+        setSlotSuccess("");
         setVerification(null);
         setActionError("");
         setRequestFilter("all");
@@ -232,6 +336,18 @@ export default function ClinicPage() {
       }}
       isLoadingRequests={isLoadingRequests}
       requestsError={requestsError}
+      clinics={clinics}
+      clinicsError={clinicsError}
+      isLoadingClinics={isLoadingClinics}
+      selectedClinic={selectedClinic}
+      selectedClinicId={selectedClinicId}
+      onClinicChange={handleClinicChange}
+      slotDateTime={slotDateTime}
+      onSlotDateTimeChange={setSlotDateTime}
+      onCreateSlot={handleCreateSlot}
+      isCreatingSlot={isCreatingSlot}
+      slotError={slotError}
+      slotSuccess={slotSuccess}
       incomingRequests={incomingRequests}
       filteredRequests={filteredRequests}
       requestFilter={requestFilter}

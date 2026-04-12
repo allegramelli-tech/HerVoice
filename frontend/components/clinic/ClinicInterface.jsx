@@ -58,6 +58,18 @@ export default function ClinicInterface({
   onSignOut,
   isLoadingRequests,
   requestsError,
+  clinics,
+  clinicsError,
+  isLoadingClinics,
+  selectedClinic,
+  selectedClinicId,
+  onClinicChange,
+  slotDateTime,
+  onSlotDateTimeChange,
+  onCreateSlot,
+  isCreatingSlot,
+  slotError,
+  slotSuccess,
   incomingRequests,
   filteredRequests,
   requestFilter,
@@ -107,7 +119,7 @@ export default function ClinicInterface({
                 Clinic workspace
               </div>
               <div className="mt-1 text-sm font-semibold text-slate-900">
-                Berlin Partner Clinic
+                {selectedClinic?.name || "Clinic workspace"}
               </div>
               <div className="mt-1 text-xs text-slate-500">
                 Verified clinic access
@@ -136,8 +148,8 @@ export default function ClinicInterface({
                 Review and verify incoming reservations
               </h1>
               <p className="mt-2 text-sm text-slate-500">
-                Choose a status filter, open a reservation, and continue the
-                verification flow from there.
+                Choose a status filter, open an incoming reservation, and verify
+                the patient identity before funds are released.
               </p>
             </div>
 
@@ -164,6 +176,126 @@ export default function ClinicInterface({
                 );
               })}
             </div>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-white/70 bg-white p-6 shadow-[0_20px_50px_rgba(148,163,184,0.12)]">
+          <div className="flex flex-col gap-5">
+            <div>
+              <div className="inline-flex w-fit rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#993556]">
+                Time slots
+              </div>
+              <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900">
+                Add clinic availability
+              </h2>
+              <p className="mt-2 text-sm text-slate-500">
+                Create new appointment times so patients can reserve care with the selected clinic.
+              </p>
+            </div>
+
+            <form
+              onSubmit={onCreateSlot}
+              className="grid gap-4 rounded-3xl border border-slate-100 bg-slate-50 p-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
+            >
+              <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+                Clinic
+                <select
+                  value={selectedClinicId}
+                  onChange={onClinicChange}
+                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
+                >
+                  <option value="">Select a clinic</option>
+                  {clinics.map((clinic) => (
+                    <option key={clinic.id} value={clinic.id}>
+                      {clinic.name} - {clinic.city}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+                New time slot
+                <input
+                  type="datetime-local"
+                  value={slotDateTime}
+                  onChange={(event) => onSlotDateTimeChange(event.target.value)}
+                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
+                />
+              </label>
+
+              <button
+                type="submit"
+                disabled={isCreatingSlot}
+                className="inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 xl:self-end"
+                style={{ backgroundColor: "#993556" }}
+              >
+                {isCreatingSlot ? "Creating..." : "Add time slot"}
+              </button>
+
+              {isLoadingClinics ? <Spinner text="Loading clinics..." /> : null}
+
+              {clinicsError ? (
+                <div className="xl:col-span-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                  {clinicsError}
+                </div>
+              ) : null}
+
+              {slotError ? (
+                <div className="xl:col-span-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                  {slotError}
+                </div>
+              ) : null}
+
+              {slotSuccess ? (
+                <div className="xl:col-span-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                  {slotSuccess}
+                </div>
+              ) : null}
+            </form>
+
+            {selectedClinic ? (
+              <div className="rounded-3xl border border-slate-100 bg-slate-50 p-5">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                      Selected clinic
+                    </div>
+                    <div className="mt-2 text-lg font-semibold text-slate-900">
+                      {selectedClinic.name}
+                    </div>
+                    <div className="mt-1 text-sm text-slate-600">
+                      {selectedClinic.city}
+                    </div>
+                  </div>
+
+                  <div className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
+                    {selectedClinic.available_slots?.length || 0} open slots
+                  </div>
+                </div>
+
+                {selectedClinic.available_slots?.length ? (
+                  <div className="mt-4 grid gap-3">
+                    {selectedClinic.available_slots.map((slot) => (
+                      <div
+                        key={slot.id}
+                        className="rounded-2xl border border-slate-200 bg-white px-4 py-4"
+                      >
+                        <div className="text-sm font-semibold text-slate-900">
+                          {formatDateTime(slot.slot_datetime)}
+                        </div>
+                        <div className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">
+                          {slot.status}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mt-4 rounded-2xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
+                    This clinic does not have any open time slots yet.
+                  </div>
+                )}
+              </div>
+            ) : null}
           </div>
         </section>
 
@@ -211,7 +343,7 @@ export default function ClinicInterface({
                               Reservation ID
                             </div>
                             <div className="mt-2 break-all font-mono text-sm text-slate-900">
-                              {request.case_id}
+                              {request.patient_hash || request.case_id}
                             </div>
                           </div>
 
@@ -221,6 +353,24 @@ export default function ClinicInterface({
                             </div>
                             <div className="mt-2 text-sm font-medium text-slate-900">
                               {formatDateTime(request.created_at)}
+                            </div>
+                          </div>
+
+                          <div>
+                            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                              Appointment time
+                            </div>
+                            <div className="mt-2 text-sm font-medium text-slate-900">
+                              {formatDateTime(request.slot_datetime)}
+                            </div>
+                          </div>
+
+                          <div>
+                            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                              Clinic
+                            </div>
+                            <div className="mt-2 text-sm font-medium text-slate-900">
+                              {request.clinic_name || "Clinic unavailable"}
                             </div>
                           </div>
                         </div>
