@@ -77,6 +77,17 @@ function formatStatus(value) {
     .join(" ");
 }
 
+function getLatestAllowedBirthDate() {
+  const today = new Date();
+  const latest = new Date(
+    today.getFullYear() - 14,
+    today.getMonth(),
+    today.getDate()
+  );
+
+  return latest.toISOString().split("T")[0];
+}
+
 const inputClassName =
   "rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-300 focus:ring-2 focus:ring-rose-100";
 
@@ -93,11 +104,18 @@ export default function PatientForm({
   onSelectSlot,
   onBack,
 }) {
+  const latestAllowedBirthDate = getLatestAllowedBirthDate();
+
   function handleExportPdf() {
     if (typeof window !== "undefined") {
       window.print();
     }
   }
+
+  const sortedAvailableSlots = [...(selectedClinic?.available_slots || [])].sort(
+    (left, right) =>
+      new Date(left.slot_datetime).getTime() - new Date(right.slot_datetime).getTime()
+  );
 
   if (submittedCase) {
     return (
@@ -145,15 +163,6 @@ export default function PatientForm({
                 </div>
                 <div className="mt-2 text-lg font-semibold text-slate-900">
                   {formatStatus(submittedCase.status)}
-                </div>
-              </div>
-
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">
-                  Support amount
-                </div>
-                <div className="mt-2 text-lg font-semibold text-slate-900">
-                  {submittedCase.amount_xrp} EUR
                 </div>
               </div>
 
@@ -245,7 +254,7 @@ export default function PatientForm({
         </section>
       ) : null}
 
-      {selectedClinic?.available_slots?.length ? (
+      {sortedAvailableSlots.length ? (
         <section className="rounded-3xl border border-slate-100 bg-white p-5 sm:p-6">
           <div className="mb-5">
             <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
@@ -257,7 +266,7 @@ export default function PatientForm({
           </div>
 
           <div className="grid gap-3">
-            {selectedClinic.available_slots.map((slot) => {
+            {sortedAvailableSlots.map((slot) => {
               const isSelected = selectedSlotId === slot.id;
 
               return (
@@ -346,6 +355,7 @@ export default function PatientForm({
               name="birthDate"
               value={formData.birthDate}
               onChange={onChange}
+              max={latestAllowedBirthDate}
               className={inputClassName}
             />
           </Field>
@@ -408,7 +418,7 @@ export default function PatientForm({
           className="inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           style={{ backgroundColor: BRAND_COLOR }}
         >
-          Request support
+          Send request
         </button>
       </div>
     </form>

@@ -45,6 +45,31 @@ function matchesClinicSearch(clinic, term) {
   );
 }
 
+function isAtLeastFourteen(dateString) {
+  if (!dateString) {
+    return false;
+  }
+
+  const birthDate = new Date(dateString);
+
+  if (Number.isNaN(birthDate.getTime())) {
+    return false;
+  }
+
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const hasHadBirthdayThisYear =
+    today.getMonth() > birthDate.getMonth() ||
+    (today.getMonth() === birthDate.getMonth() &&
+      today.getDate() >= birthDate.getDate());
+
+  if (!hasHadBirthdayThisYear) {
+    age -= 1;
+  }
+
+  return age >= 14;
+}
+
 export default function PatientPage() {
   const [mode, setMode] = useState("selector");
   const [formData, setFormData] = useState(INITIAL_FORM);
@@ -129,6 +154,11 @@ export default function PatientPage() {
 
     if (required.some((value) => !String(value || "").trim())) {
       setErrorMessage("Please complete all fields and choose a time slot.");
+      return;
+    }
+
+    if (!isAtLeastFourteen(formData.birthDate)) {
+      setErrorMessage("The patient must be at least 14 years old.");
       return;
     }
 

@@ -136,46 +136,50 @@ export default function ClinicInterface({
       </header>
 
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
-        <section className="rounded-3xl border border-white/70 bg-white p-6 shadow-[0_20px_50px_rgba(148,163,184,0.12)]">
-          <div className="flex flex-col gap-5">
-            <div>
-              <div className="inline-flex w-fit rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#993556]">
-                Time slots
-              </div>
-              <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900">
-                Add clinic availability
-              </h2>
-              <p className="mt-2 text-sm text-slate-500">
-                Create new appointment times so patients can reserve care with this clinic.
-              </p>
-            </div>
-
-            <form
-              onSubmit={onCreateSlot}
-              className="grid gap-4 rounded-3xl border border-slate-100 bg-[linear-gradient(180deg,_#fff9fb_0%,_#ffffff_100%)] p-5 xl:grid-cols-[minmax(0,1fr)_auto]"
-            >
-              <div className="rounded-3xl border border-white bg-white p-4 shadow-[0_12px_30px_rgba(15,23,42,0.04)]">
-                <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
-                  New time slot
-                  <input
-                    type="datetime-local"
-                    value={slotDateTime}
-                    onChange={(event) => onSlotDateTimeChange(event.target.value)}
-                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
-                  />
-                </label>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isCreatingSlot}
-                className="inline-flex min-h-[52px] items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 xl:self-center"
-                style={{ backgroundColor: "#993556" }}
+          <section className="rounded-3xl border border-white/70 bg-white p-6 shadow-[0_20px_50px_rgba(148,163,184,0.12)]">
+            <div className="flex flex-col gap-5">
+              <form
+                onSubmit={onCreateSlot}
+                className="grid gap-4 rounded-3xl border border-slate-100 bg-[linear-gradient(180deg,_#fff9fb_0%,_#ffffff_100%)] p-5 xl:grid-cols-[minmax(0,1fr)_auto]"
               >
-                {isCreatingSlot ? "Creating..." : "Add time slot"}
-              </button>
+                <div className="rounded-3xl border border-white bg-white p-4 shadow-[0_12px_30px_rgba(15,23,42,0.04)]">
+                  <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+                    <div className="min-w-0 xl:max-w-sm">
+                      <div className="inline-flex w-fit rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#993556]">
+                        Time slots
+                      </div>
+                      <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900">
+                        Add clinic availability
+                      </h2>
+                      <p className="mt-2 text-sm text-slate-500">
+                        Create new appointment times so patients can reserve care with this clinic.
+                      </p>
+                    </div>
 
-              {isLoadingClinics ? <Spinner text="Loading clinic profile..." /> : null}
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-end xl:justify-end">
+                      <label className="flex flex-1 flex-col gap-2 text-sm font-medium text-slate-700">
+                        New time slot
+                        <input
+                          type="datetime-local"
+                          value={slotDateTime}
+                          onChange={(event) => onSlotDateTimeChange(event.target.value)}
+                          className="w-full max-w-xs rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-rose-300 focus:bg-white focus:ring-2 focus:ring-rose-100"
+                        />
+                      </label>
+
+                      <button
+                        type="submit"
+                        disabled={isCreatingSlot}
+                        className="inline-flex min-h-[44px] items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                        style={{ backgroundColor: "#993556" }}
+                      >
+                        {isCreatingSlot ? "Creating..." : "Add time slot"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {isLoadingClinics ? <Spinner text="Loading clinic profile..." /> : null}
 
               {clinicsError ? (
                 <div className="xl:col-span-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
