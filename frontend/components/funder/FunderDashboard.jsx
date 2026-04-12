@@ -36,14 +36,111 @@ function MetricCard({ label, value, subtle = false }) {
     <div
       className={`rounded-3xl border p-5 ${
         subtle
-          ? "border-slate-100 bg-white/80"
-          : "border-rose-100 bg-[linear-gradient(180deg,_#fff9fb_0%,_#ffffff_100%)]"
+          ? "border-slate-100 bg-[linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)]"
+          : "border-rose-100 bg-[linear-gradient(180deg,_#fff9fb_0%,_#ffffff_100%)] shadow-[0_12px_30px_rgba(153,53,86,0.06)]"
       }`}
     >
-      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-        {label}
+      <div className="flex items-center gap-2">
+        <span
+          className={`h-2.5 w-2.5 rounded-full ${
+            subtle ? "bg-slate-300" : "bg-[#993556]"
+          }`}
+        />
+        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+          {label}
+        </div>
       </div>
-      <div className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">{value}</div>
+      <div className="mt-4 text-[2rem] font-semibold leading-none tracking-tight text-slate-900 sm:text-3xl">
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function DonutChartCard({
+  title,
+  value,
+  total,
+  segments,
+  highlightLabel,
+}) {
+  const safeTotal = Math.max(total || 0, 0);
+  const safeValue = Math.max(value || 0, 0);
+  const percentage =
+    safeTotal > 0 ? Math.min((safeValue / safeTotal) * 100, 100) : 0;
+
+  const gradientStops = [];
+  let currentOffset = 0;
+
+  segments.forEach((segment) => {
+    const portion = safeTotal > 0 ? (Math.max(segment.value, 0) / safeTotal) * 100 : 0;
+    const nextOffset = currentOffset + portion;
+    gradientStops.push(
+      `${segment.color} ${currentOffset}% ${nextOffset}%`
+    );
+    currentOffset = nextOffset;
+  });
+
+  if (currentOffset < 100) {
+    gradientStops.push(`#f1f5f9 ${currentOffset}% 100%`);
+  }
+
+  return (
+    <div className="rounded-3xl border border-slate-100 bg-[linear-gradient(180deg,_#ffffff_0%,_#fff9fb_100%)] p-5 shadow-[0_12px_30px_rgba(15,23,42,0.04)]">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+            {title}
+          </div>
+          <div className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">
+            {Math.round(percentage)}%
+          </div>
+          <div className="mt-1 text-sm leading-6 text-slate-500">
+            {highlightLabel}
+          </div>
+        </div>
+
+        <div className="rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-semibold text-[#993556]">
+          {safeValue} of {safeTotal}
+        </div>
+      </div>
+
+      <div className="mt-6 flex flex-col items-center gap-6">
+        <div
+          className="relative h-40 w-40 shrink-0 rounded-full"
+          style={{
+            background: `conic-gradient(${gradientStops.join(", ")})`,
+          }}
+        >
+          <div className="absolute inset-[16px] rounded-full bg-white" />
+        </div>
+
+        <div className="grid w-full gap-3 text-sm sm:grid-cols-2">
+          {segments.map((segment) => (
+            <div
+              key={segment.key}
+              className="flex items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-white/80 px-4 py-3"
+            >
+              <div className="flex items-center gap-3 text-slate-600">
+                <span
+                  className="h-3 w-3 rounded-full"
+                  style={{ backgroundColor: segment.color }}
+                />
+                <span>{segment.label}</span>
+              </div>
+              <div className="text-right">
+                <div className="font-semibold text-slate-900">{segment.value}</div>
+                <div className="text-xs text-slate-400">
+                  {safeTotal > 0
+                    ? `${Math.round((segment.value / safeTotal) * 100)}%`
+                    : "0%"}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+      </div>
     </div>
   );
 }
@@ -118,6 +215,16 @@ export default function FunderDashboard({
   formatAnonymousId,
   getUiStatus,
 }) {
+  const totalReservations = dashboard?.total_cases ?? 0;
+  const confirmedReservations = confirmedCount ?? 0;
+  const pendingReservations = Math.max(
+    totalReservations - confirmedReservations,
+    0
+  );
+  const totalAppointments = dashboard?.total_appointments ?? 0;
+  const completedAppointments = dashboard?.total_completed_appointments ?? 0;
+  const openAppointments = Math.max(totalAppointments - completedAppointments, 0);
+
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,_#fff8fa_0%,_#f8fafc_48%,_#ffffff_100%)]">
       <header className="border-b border-white/70 bg-white/85 backdrop-blur">
@@ -169,23 +276,44 @@ export default function FunderDashboard({
                   Funding overview
                 </div>
                 <p className="mt-3 text-sm text-slate-500">
-                  Funding and reservations across the network.
+                  A quick view of current funding volume and confirmation progress.
                 </p>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <MetricCard label="Total reservations" value={dashboard?.total_cases ?? 0} />
-                <MetricCard label="Confirmed reservations" value={confirmedCount} />
-                <MetricCard
-                  label="EUR committed"
-                  value={`${dashboard?.total_xrp_locked ?? 0} EUR`}
-                  subtle
+              <div className="flex flex-col gap-4">
+                <DonutChartCard
+                  title="Confirmation share"
+                  value={confirmedReservations}
+                  total={totalReservations}
+                  highlightLabel="already confirmed"
+                  segments={[
+                    {
+                      key: "confirmed",
+                      label: "Confirmed",
+                      value: confirmedReservations,
+                      color: "#993556",
+                    },
+                    {
+                      key: "remaining",
+                      label: "Remaining",
+                      value: pendingReservations,
+                      color: "#f2d6e1",
+                    },
+                  ]}
                 />
-                <MetricCard
-                  label="EUR released"
-                  value={`${dashboard?.total_xrp_released ?? 0} EUR`}
-                  subtle
-                />
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <MetricCard
+                    label="EUR committed"
+                    value={`${dashboard?.total_xrp_locked ?? 0} EUR`}
+                    subtle
+                  />
+                  <MetricCard
+                    label="EUR released"
+                    value={`${dashboard?.total_xrp_released ?? 0} EUR`}
+                    subtle
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -197,27 +325,41 @@ export default function FunderDashboard({
                   Care operations
                 </div>
                 <p className="mt-3 text-sm text-slate-500">
-                  Live counts from clinics, patients, appointments, and proofs.
+                  Live counts across clinics, patients, and appointment activity.
                 </p>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <MetricCard label="Clinics" value={dashboard?.total_clinics ?? 0} subtle />
-                <MetricCard label="Patients" value={dashboard?.total_patient_cases ?? 0} subtle />
-                <MetricCard
-                  label="Appointments"
-                  value={dashboard?.total_appointments ?? 0}
-                  subtle
+              <div className="flex flex-col gap-4">
+                <DonutChartCard
+                  title="Completion share"
+                  value={completedAppointments}
+                  total={totalAppointments}
+                  highlightLabel="already completed"
+                  segments={[
+                    {
+                      key: "completed",
+                      label: "Completed",
+                      value: completedAppointments,
+                      color: "#2C2C2A",
+                    },
+                    {
+                      key: "open",
+                      label: "Open",
+                      value: openAppointments,
+                      color: "#e2e8f0",
+                    },
+                  ]}
                 />
-                <MetricCard
-                  label="Completed appointments"
-                  value={dashboard?.total_completed_appointments ?? 0}
-                  subtle
-                />
-                <div className="sm:col-span-2">
+
+                <div className="grid gap-4 sm:grid-cols-2">
                   <MetricCard
-                    label="Proofs submitted"
-                    value={dashboard?.total_proofs_submitted ?? 0}
+                    label="Clinics"
+                    value={dashboard?.total_clinics ?? 0}
+                    subtle
+                  />
+                  <MetricCard
+                    label="Patients"
+                    value={dashboard?.total_patient_cases ?? 0}
                     subtle
                   />
                 </div>

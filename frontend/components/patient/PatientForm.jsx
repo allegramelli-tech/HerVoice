@@ -231,19 +231,7 @@ export default function PatientForm({
               placeholder="name@example.com"
             />
           </Field>
-          <Field label="Phone number">
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={onChange}
-              className={inputClassName}
-              placeholder="+49 123 456 789"
-              inputMode="tel"
-              autoComplete="tel"
-            />
-          </Field>
-          <Field label="Country" className="md:col-span-2">
+          <Field label="Country">
             <select
               name="country"
               value={formData.country}

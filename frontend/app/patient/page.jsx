@@ -12,7 +12,6 @@ const INITIAL_FORM = {
   firstName: "",
   lastName: "",
   email: "",
-  phone: "",
   country: "",
   insuranceType: "",
   insuranceProvider: "",
@@ -61,10 +60,6 @@ function matchesClinicSearch(clinic, term) {
   return [clinic.city, clinic.name, clinic.doctor_name].some((value) =>
     String(value || "").toLowerCase().includes(query)
   );
-}
-
-function countPhoneDigits(value) {
-  return String(value || "").replace(/\D/g, "").length;
 }
 
 export default function PatientPage() {
@@ -130,7 +125,6 @@ export default function PatientPage() {
       formData.firstName,
       formData.lastName,
       formData.email,
-      formData.phone,
       formData.country,
       formData.insuranceType,
       formData.insuranceProvider,
@@ -140,12 +134,6 @@ export default function PatientPage() {
       setErrorMessage("Please complete all fields before requesting support.");
       return;
     }
-    if (countPhoneDigits(formData.phone) < 8) {
-      setErrorMessage(
-        "Please enter a valid phone number with at least 8 digits."
-      );
-      return;
-    }
     setIsCreatingCase(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/cases`, {
@@ -153,7 +141,7 @@ export default function PatientPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: formData.email.trim(),
-          phone: formData.phone.trim() || null,
+          phone: null,
           country_of_origin: formData.country,
         }),
       });

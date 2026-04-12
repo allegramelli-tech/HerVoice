@@ -1,214 +1,207 @@
-<p align="center">
-  <svg width="44" height="44" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M12 20.2s-6.95-4.32-8.97-8.44C1.6 8.84 3.12 5.5 6.3 4.63c2.04-.56 4.14.18 5.7 1.98 1.56-1.8 3.66-2.54 5.7-1.98 3.18.87 4.7 4.21 3.27 7.13C18.95 15.88 12 20.2 12 20.2Z"
-      fill="#993556"
-      fill-opacity="0.15"
-      stroke="#993556"
-      stroke-width="1.5"
-    />
-    <path
-      d="M12 8.2v4.1M9.95 10.25h4.1"
-      stroke="#993556"
-      stroke-linecap="round"
-      stroke-width="1.6"
-    />
-  </svg>
-</p>
+<div align="center">
 
-<h1 align="center">
-  <span style="color:#993556;">Her</span><span style="color:#2C2C2A;">Voice</span>
-</h1>
+<!-- Animated SVG background bar -->
+<svg width="100%" height="8" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="8" fill="#993556"/>
+  <rect width="30%" height="8" fill="#f4c0d1" opacity="0.5">
+    <animate attributeName="x" from="-30%" to="100%" dur="2.8s" repeatCount="indefinite"/>
+  </rect>
+</svg>
 
-<p align="center">
-  Privacy-first cross-border funding and settlement prototype for abortion access in Europe.
-</p>
+<br/>
+<br/>
 
-<p align="center">
-  Built with <strong>Next.js</strong>, <strong>FastAPI</strong>, <strong>SQLite</strong>, and <strong>XRPL Testnet</strong>.
-</p>
+<!-- Logo -->
+<svg width="56" height="56" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M12 20.2s-6.95-4.32-8.97-8.44C1.6 8.84 3.12 5.5 6.3 4.63c2.04-.56 4.14.18 5.7 1.98 1.56-1.8 3.66-2.54 5.7-1.98 3.18.87 4.7 4.21 3.27 7.13C18.95 15.88 12 20.2 12 20.2Z" fill="#993556" fill-opacity="0.18" stroke="#993556" stroke-width="1.5"/>
+  <path d="M12 8.2v4.1M9.95 10.25h4.1" stroke="#993556" stroke-linecap="round" stroke-width="1.6"/>
+</svg>
 
-## Overview
+<br/>
 
-HerVoice is a cross-border platform prototype designed to reduce friction around abortion access for people in Europe who face domestic restrictions.
+<!-- Typing animation -->
+<img src="https://readme-typing-svg.demolab.com?font=Georgia&size=42&duration=3000&pause=1200&color=993556&center=true&vCenter=true&width=600&height=70&lines=HerVoice" alt="HerVoice"/>
 
-The platform helps patients request support, find partner clinics, and book appointments. On the other side, funders can create and track funding cases, and clinics can verify reservations and confirm care. The settlement layer runs on XRPL Testnet, while sensitive medical and personal data stays off-chain.
+<img src="https://readme-typing-svg.demolab.com?font=Georgia&size=16&duration=4000&pause=2000&color=2C2C2A&center=true&vCenter=true&width=700&height=40&lines=Privacy-first+cross-border+funding+for+abortion+access+in+Europe" alt="tagline"/>
 
-This MVP focuses on a practical end-to-end flow:
+<br/>
 
-1. A funder locks support funds in an XRPL escrow.
-2. The platform generates an anonymous reservation.
-3. A patient uses the platform to continue their case and book care.
-4. A clinic verifies the reservation and confirms service delivery.
-5. The escrow is released to the clinic under predefined rules.
+<!-- Animated dot divider -->
+<svg width="200" height="16" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="20" cy="8" r="3" fill="#993556">
+    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="40" cy="8" r="3" fill="#f4c0d1">
+    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0.3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="60" cy="8" r="3" fill="#993556">
+    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0.6s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="80" cy="8" r="3" fill="#f4c0d1">
+    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0.9s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="100" cy="8" r="3" fill="#993556">
+    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="1.2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="120" cy="8" r="3" fill="#f4c0d1">
+    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="140" cy="8" r="3" fill="#993556">
+    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="160" cy="8" r="3" fill="#f4c0d1">
+    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="2.1s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="180" cy="8" r="3" fill="#993556">
+    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="2.4s" repeatCount="indefinite"/>
+  </circle>
+</svg>
 
-The goal is not to put healthcare data on-chain. The goal is to turn a funding promise into a transparent, auditable payment flow without exposing patient identity or medical records.
+<br/>
+
+![Next.js](https://img.shields.io/badge/Next.js_14-2C2C2A?style=flat-square&logo=nextdotjs&logoColor=fff8fa)
+![FastAPI](https://img.shields.io/badge/FastAPI-993556?style=flat-square&logo=fastapi&logoColor=fff8fa)
+![XRPL](https://img.shields.io/badge/XRPL_Testnet-2C2C2A?style=flat-square&logo=ripple&logoColor=fff8fa)
+![SQLite](https://img.shields.io/badge/SQLite-993556?style=flat-square&logo=sqlite&logoColor=fff8fa)
+![Tailwind](https://img.shields.io/badge/Tailwind_CSS-2C2C2A?style=flat-square&logo=tailwind-css&logoColor=fff8fa)
+
+<br/>
+
+> _"Turning a funding promise into a transparent, auditable payment flow —_
+> _without exposing patient identity or medical records."_
+
+<!-- Animated bottom bar -->
+<svg width="100%" height="4" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="4" fill="#fff8fa"/>
+  <rect width="20%" height="4" fill="#993556" opacity="0.6">
+    <animate attributeName="x" from="-20%" to="100%" dur="2.2s" repeatCount="indefinite"/>
+  </rect>
+</svg>
+
+</div>
+
+---
+
+## What Is HerVoice?
+
+HerVoice is a cross-border platform prototype that reduces friction around abortion access for people in Europe who face domestic restrictions.
+
+Patients can request support, find partner clinics, and book appointments — anonymously. Funders create and track funding cases with full on-chain auditability. Clinics verify vouchers and confirm care. Settlement runs on **XRPL Testnet**, while all sensitive medical and personal data stays **off-chain**.
+
+---
 
 ## Why This Matters
 
-- Patients need a calm and low-friction path to cross-border care.
-- Clinics need more certainty that pledged support will actually settle.
-- Funders need transparent, auditable payment flows.
-- All parties need privacy-sensitive coordination that does not leak medical information onto a public ledger.
+|              | The Problem                                       | HerVoice's Answer                                        |
+| ------------ | ------------------------------------------------- | -------------------------------------------------------- |
+| **Patients** | No low-friction path to cross-border care         | Calm, anonymous booking flow — no login required         |
+| **Clinics**  | Uncertainty about whether pledged support settles | Verified on-chain escrow, released on confirmation       |
+| **Funders**  | No transparent audit trail                        | Immutable XRPL settlement records                        |
+| **Everyone** | Medical data leaking onto public ledgers          | Strict off-chain data model — nothing sensitive on-chain |
 
-## What Is Live In The Current MVP
+---
 
-### Patient portal
+## Live MVP Flow
+
+```
+Funder locks XRP in escrow
+        ↓
+Platform generates anonymous voucher
+        ↓
+Patient uses access code to search clinics & book
+        ↓
+Clinic verifies voucher + confirms care
+        ↓
+Escrow released to clinic on XRPL Testnet
+```
+
+---
+
+## What's Live
+
+### Patient Portal
 
 - Start without login
-- Request support
-- Receive an access code
-- Resume a case later with that code
-- Search clinics by city, clinic name, or doctor
-- View available slots
-- Book or cancel an appointment
+- Submit a support request
+- Receive a private **access code**
+- Resume a case on any device
+- Search clinics by city, name, or doctor
+- View available slots and book or cancel
 
-### Funder portal
+### Funder Portal
 
-- Create funding cases
-- Generate reservations through the backend
+- Create funding cases and generate vouchers
 - View funding and operations metrics
-- Link a funding case to a booked clinic appointment
-- Review case status in the dashboard
+- Link a funding case to a booked appointment
+- Track case status in the dashboard
 
-### Clinic portal
+### Clinic Portal
 
-- Verify reservation validity
+- Verify voucher validity
 - Confirm service delivery
 - Trigger XRPL escrow release
-- Review incoming requests from the dashboard
+- Review incoming requests
 
-### Backend-only flows already implemented
+### Backend-Only (Already Implemented)
 
-- Clinic registration
-- Clinic slot creation
+- Clinic registration and slot creation
 - Appointment listing for clinic admins
 - Proof submission with optional PDF upload
-- Retry payout for proof records if release needs to be retried
+- Retry payout for failed escrow releases
 
-## Product Flow
-
-### 1. Patient support request
-
-The patient enters personal and insurance details in the frontend. The backend stores only the minimum currently used by the MVP for the case creation request: `email`, `phone`, and `country_of_origin`.
-
-The backend returns:
-
-- `case_id`
-- `access_code`
-- `care_status`
-
-### 2. Clinic discovery and booking
-
-The patient can:
-
-- load clinics from the backend
-- search them in the frontend
-- open clinic details
-- select a slot
-- book an appointment using the access code
-
-### 3. Funding case creation
-
-A funder creates a funding case through `POST /api/fund`.
-
-The backend then:
-
-- creates a `FundingCase`
-- creates a reservation record in the backend
-- generates a crypto-condition pair
-- submits `EscrowCreate` on XRPL Testnet
-- stores the resulting transaction hash and escrow sequence
-
-### 4. Linking funding to an appointment
-
-Once an appointment exists, the funder can link a funding case to it through:
-
-- `PATCH /api/clinic-admin/appointments/{appointment_id}/link-funding`
-
-This is already wired in the frontend.
-
-### 5. Reservation verification and payout
-
-The clinic verifies a reservation through:
-
-- `POST /api/clinic/verify`
-
-If valid, the clinic confirms service through:
-
-- `POST /api/clinic/confirm`
-
-The backend then:
-
-- checks reservation validity
-- prevents duplicate redemption
-- submits `EscrowFinish` on XRPL Testnet
-- marks the reservation as redeemed
-- marks the funding case as released
+---
 
 ## Privacy Model
 
-HerVoice is explicitly designed so that sensitive healthcare data is not written on-chain.
+HerVoice is designed so that **no sensitive healthcare data is written on-chain.**
 
-### Off-chain
+**Off-chain (database only)**
 
-- patient email
-- patient phone
-- country of origin
-- clinic data
-- appointment data
-- proof metadata and uploaded PDFs
+- Patient email, phone, country of origin
+- Clinic and appointment data
+- Proof metadata and uploaded PDFs
 
-### On-chain / XRPL settlement layer
+**On-chain (XRPL Testnet)**
 
-- escrow creation
-- escrow release
-- transaction hashes
-- wallet-based settlement records
+- Escrow creation and release
+- Transaction hashes
+- Wallet-based settlement records
 
-### Important note
+> The app displays anonymized IDs like `DID-XXXXXX` in the UI — these are display aliases from internal case IDs, not real DIDs yet.
 
-The app currently displays anonymized IDs such as `DID-XXXXXX` in the UI, but these are display aliases derived from internal case IDs, not real decentralized identifiers yet.
+---
 
 ## XRPL Usage
 
-The current MVP uses XRPL Testnet for settlement, not for patient identity storage.
+| Feature                              | Status  |
+| ------------------------------------ | ------- |
+| XRPL Testnet via QuickNode WebSocket | Active  |
+| `EscrowCreate`                       | Active  |
+| `EscrowFinish`                       | Active  |
+| PREIMAGE-SHA-256 crypto-conditions   | Active  |
+| DID / Verifiable Credentials         | Roadmap |
+| Frontend wallet signing              | Roadmap |
+| AMM / DEX / NFTs                     | Roadmap |
 
-### Actively used today
-
-- XRPL Testnet node via QuickNode WebSocket endpoint
-- `EscrowCreate`
-- `EscrowFinish`
-- wallet seeds loaded from backend environment variables
-- PREIMAGE-SHA-256 crypto-conditions for escrow fulfillment
-
-### Not yet part of the active MVP flow
-
-- DID
-- Verifiable Credentials
-- frontend wallet signing in the main user journey
-- AMM / DEX / NFTs / issued currencies
+---
 
 ## Tech Stack
 
-### Frontend
+```
+Frontend          Backend           Settlement
+─────────         ─────────         ──────────
+Next.js 14        FastAPI           XRPL Testnet
+React 18          SQLAlchemy        xrpl-py
+Tailwind CSS      SQLite            QuickNode WSS
+                  python-dotenv
+                  python-multipart
+```
 
-- Next.js 14
-- React 18
-- Tailwind CSS
-
-### Backend
-
-- FastAPI
-- SQLAlchemy
-- SQLite
-- xrpl-py
-- python-dotenv
-- python-multipart
+---
 
 ## Repository Structure
 
-```text
+```
 HerVoice/
 ├── backend/
 │   ├── main.py
@@ -247,43 +240,51 @@ HerVoice/
 └── README.md
 ```
 
-## Main API Surface
+---
 
-### Public / patient-facing
+## API Surface
 
-- `POST /api/cases`
-- `GET /api/cases/status`
-- `GET /api/clinics`
-- `GET /api/clinics/{clinic_id}`
-- `POST /api/appointments`
-- `PATCH /api/appointments/{appointment_id}`
+### Public / Patient-facing
+
+| Method  | Endpoint                 | Description            |
+| ------- | ------------------------ | ---------------------- |
+| `POST`  | `/api/cases`             | Create support request |
+| `GET`   | `/api/cases/status`      | Resume a case          |
+| `GET`   | `/api/clinics`           | List clinics           |
+| `GET`   | `/api/clinics/{id}`      | Clinic details         |
+| `POST`  | `/api/appointments`      | Book a slot            |
+| `PATCH` | `/api/appointments/{id}` | Update appointment     |
 
 ### Funder-facing
 
-- `POST /api/fund`
-- `GET /api/dashboard`
-- `PATCH /api/clinic-admin/appointments/{appointment_id}/link-funding`
+| Method  | Endpoint                                           | Description                  |
+| ------- | -------------------------------------------------- | ---------------------------- |
+| `POST`  | `/api/fund`                                        | Create funding case + escrow |
+| `GET`   | `/api/dashboard`                                   | Funding dashboard            |
+| `PATCH` | `/api/clinic-admin/appointments/{id}/link-funding` | Link funding to appointment  |
 
 ### Clinic-facing
 
-- `POST /api/clinic/verify`
-- `POST /api/clinic/confirm`
+| Method | Endpoint              | Description                   |
+| ------ | --------------------- | ----------------------------- |
+| `POST` | `/api/clinic/verify`  | Verify voucher                |
+| `POST` | `/api/clinic/confirm` | Confirm care + release escrow |
 
-### Clinic admin / operations
+### Operations
 
-- `POST /api/clinic-admin/register`
-- `POST /api/clinic-admin/{clinic_id}/slots`
-- `GET /api/clinic-admin/{clinic_id}/appointments`
-- `POST /api/proof`
-- `POST /api/proof/{proof_id}/retry-payout`
+| Method | Endpoint                       | Description         |
+| ------ | ------------------------------ | ------------------- |
+| `POST` | `/api/clinic-admin/register`   | Register clinic     |
+| `POST` | `/api/clinic-admin/{id}/slots` | Create slots        |
+| `POST` | `/api/proof`                   | Submit proof        |
+| `POST` | `/api/proof/{id}/retry-payout` | Retry failed payout |
+| `GET`  | `/health`                      | Health check        |
 
-### Health check
-
-- `GET /health`
+---
 
 ## Local Development
 
-## 1. Backend setup
+### 1. Backend
 
 Create `backend/.env`:
 
@@ -295,8 +296,6 @@ CLINIC_WALLET_ADDRESS=your_clinic_address
 DATABASE_URL=sqlite:///./hackathon.db
 ```
 
-Install and run the backend from the `backend/` directory:
-
 ```powershell
 cd backend
 py -m venv .venv
@@ -305,7 +304,7 @@ py -m pip install -r requirements.txt
 py -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-## 2. Frontend setup
+### 2. Frontend
 
 Create `frontend/.env.local`:
 
@@ -313,76 +312,124 @@ Create `frontend/.env.local`:
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-Install and run the frontend:
-
 ```powershell
 cd frontend
 npm install
 npm run dev
 ```
 
-## 3. Open the app
+### 3. Open
 
-- Frontend: `http://localhost:3000`
-- Backend health check: `http://localhost:8000/health`
+| Service        | URL                          |
+| -------------- | ---------------------------- |
+| Frontend       | http://localhost:3000        |
+| Backend health | http://localhost:8000/health |
+| API docs       | http://localhost:8000/docs   |
 
-## Current Frontend Routes
+---
 
-- `/` landing page
-- `/patient` patient support and booking flow
-- `/funder` funder dashboard
-- `/clinic` clinic dashboard
-- `/help` mock support/contact page
+## Testing The MVP
 
-## Testing The MVP Manually
-
-### Patient
+### As a Patient
 
 1. Open `/patient`
 2. Search and select a clinic
 3. Submit a support request
-4. Keep the returned access code
-5. Resume the case and book a slot
+4. Save your access code
+5. Resume and book a slot
 
-### Funder
+### As a Funder
 
-1. Open `/funder`
+1. Open `/funder` and sign in
 2. Create a funding case
-3. Select a clinic
-4. Select a booked appointment
-5. Link the funding case to that appointment
+3. Select a clinic and a booked appointment
+4. Link the funding case
 
-### Clinic
+### As a Clinic
 
-1. Open `/clinic`
-2. Select an incoming request or paste the reservation ID
-3. Verify the reservation
-4. Confirm service
-5. Check that payout is released
+1. Open `/clinic` and sign in
+2. Select an incoming request or paste a voucher ID
+3. Verify — Confirm — Check payout released
 
-## Important Implementation Notes
+---
 
-- The frontend currently presents monetary values as `EUR` in the UI, but some backend field names still use `amount_xrp` for historical reasons.
-- The current login screens are frontend-only and do not implement real authentication.
-- Clinic search in the patient flow currently loads clinics from the backend and filters by city, clinic name, or doctor in the frontend.
-- Proof submission is implemented in the backend, but not yet surfaced as a full primary flow in the frontend UI.
+## Implementation Notes
 
-## Roadmap Ideas
+- Monetary values display as `EUR` in the UI; some backend fields still use `amount_xrp` for historical reasons
+- Login screens are frontend-only — no real authentication in this MVP
+- Clinic search loads from the backend and filters client-side by city, name, or doctor
+- Proof submission is implemented in the backend but not yet fully surfaced in the frontend UI
 
-- Real DID support
-- Verifiable Credentials for clinics and approved funding organizations
-- frontend wallet integration for funders
-- clinic-specific dashboards with stronger data partitioning
-- better realtime transaction status updates
-- production-grade auth and role management
+---
 
-## Team / Hackathon Context
+## Roadmap
 
-HerVoice was built as a Hack the Block prototype to explore how XRPL can support transparent, privacy-sensitive healthcare settlement flows in a cross-border setting.
+- [ ] Real DID support per patient case
+- [ ] Verifiable Credentials for clinics and approved funding organizations
+- [ ] Frontend wallet integration for funders
+- [ ] Clinic-specific dashboards with stronger data partitioning
+- [ ] Realtime transaction status via QuickNode Webhooks
+- [ ] Production-grade auth and role management
+
+---
+
+## Hackathon Context
+
+HerVoice was built at **Hack the Block** to explore how XRPL can support transparent, privacy-sensitive healthcare settlement flows in a cross-border setting.
 
 The project is intentionally opinionated:
 
-- privacy first
-- sensitive data off-chain
-- auditable settlement on-chain
-- calm UX for patients
+- **Privacy first** — sensitive data stays off-chain
+- **Auditable settlement** — on-chain transparency without identity exposure
+- **Calm UX** — designed for patients in a stressful moment
+
+---
+
+<div align="center">
+
+<!-- Animated footer dots -->
+<svg width="200" height="16" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="20" cy="8" r="3" fill="#f4c0d1">
+    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="40" cy="8" r="3" fill="#993556">
+    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0.3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="60" cy="8" r="3" fill="#f4c0d1">
+    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0.6s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="80" cy="8" r="3" fill="#993556">
+    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0.9s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="100" cy="8" r="3" fill="#f4c0d1">
+    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="1.2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="120" cy="8" r="3" fill="#993556">
+    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="140" cy="8" r="3" fill="#f4c0d1">
+    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="160" cy="8" r="3" fill="#993556">
+    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="2.1s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="180" cy="8" r="3" fill="#f4c0d1">
+    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="2.4s" repeatCount="indefinite"/>
+  </circle>
+</svg>
+
+<br/>
+
+_Built with care at Hack the Block · Paris 2026_
+
+<br/>
+
+<!-- Animated footer bar -->
+<svg width="100%" height="8" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="8" fill="#993556"/>
+  <rect width="30%" height="8" fill="#f4c0d1" opacity="0.5">
+    <animate attributeName="x" from="-30%" to="100%" dur="2.8s" repeatCount="indefinite"/>
+  </rect>
+</svg>
+
+</div>
