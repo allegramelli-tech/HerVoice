@@ -1,6 +1,5 @@
 <div align="center">
 
-<!-- Animated SVG background bar -->
 <svg width="100%" height="8" xmlns="http://www.w3.org/2000/svg">
   <rect width="100%" height="8" fill="#993556"/>
   <rect width="30%" height="8" fill="#f4c0d1" opacity="0.5">
@@ -11,7 +10,6 @@
 <br/>
 <br/>
 
-<!-- Logo -->
 <svg width="56" height="56" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path d="M12 20.2s-6.95-4.32-8.97-8.44C1.6 8.84 3.12 5.5 6.3 4.63c2.04-.56 4.14.18 5.7 1.98 1.56-1.8 3.66-2.54 5.7-1.98 3.18.87 4.7 4.21 3.27 7.13C18.95 15.88 12 20.2 12 20.2Z" fill="#993556" fill-opacity="0.18" stroke="#993556" stroke-width="1.5"/>
   <path d="M12 8.2v4.1M9.95 10.25h4.1" stroke="#993556" stroke-linecap="round" stroke-width="1.6"/>
@@ -19,42 +17,22 @@
 
 <br/>
 
-<!-- Typing animation -->
 <img src="https://readme-typing-svg.demolab.com?font=Georgia&size=42&duration=3000&pause=1200&color=993556&center=true&vCenter=true&width=600&height=70&lines=HerVoice" alt="HerVoice"/>
 
 <img src="https://readme-typing-svg.demolab.com?font=Georgia&size=16&duration=4000&pause=2000&color=2C2C2A&center=true&vCenter=true&width=700&height=40&lines=Privacy-first+cross-border+funding+for+abortion+access+in+Europe" alt="tagline"/>
 
 <br/>
 
-<!-- Animated dot divider -->
 <svg width="200" height="16" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="20" cy="8" r="3" fill="#993556">
-    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="40" cy="8" r="3" fill="#f4c0d1">
-    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0.3s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="60" cy="8" r="3" fill="#993556">
-    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0.6s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="80" cy="8" r="3" fill="#f4c0d1">
-    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0.9s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="100" cy="8" r="3" fill="#993556">
-    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="1.2s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="120" cy="8" r="3" fill="#f4c0d1">
-    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="1.5s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="140" cy="8" r="3" fill="#993556">
-    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="1.8s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="160" cy="8" r="3" fill="#f4c0d1">
-    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="2.1s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="180" cy="8" r="3" fill="#993556">
-    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="2.4s" repeatCount="indefinite"/>
-  </circle>
+  <circle cx="20" cy="8" r="3" fill="#993556"><animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0s" repeatCount="indefinite"/></circle>
+  <circle cx="40" cy="8" r="3" fill="#f4c0d1"><animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0.3s" repeatCount="indefinite"/></circle>
+  <circle cx="60" cy="8" r="3" fill="#993556"><animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0.6s" repeatCount="indefinite"/></circle>
+  <circle cx="80" cy="8" r="3" fill="#f4c0d1"><animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0.9s" repeatCount="indefinite"/></circle>
+  <circle cx="100" cy="8" r="3" fill="#993556"><animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="1.2s" repeatCount="indefinite"/></circle>
+  <circle cx="120" cy="8" r="3" fill="#f4c0d1"><animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="1.5s" repeatCount="indefinite"/></circle>
+  <circle cx="140" cy="8" r="3" fill="#993556"><animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="1.8s" repeatCount="indefinite"/></circle>
+  <circle cx="160" cy="8" r="3" fill="#f4c0d1"><animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="2.1s" repeatCount="indefinite"/></circle>
+  <circle cx="180" cy="8" r="3" fill="#993556"><animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="2.4s" repeatCount="indefinite"/></circle>
 </svg>
 
 <br/>
@@ -70,7 +48,6 @@
 > _"Turning a funding promise into a transparent, auditable payment flow —_
 > _without exposing patient identity or medical records."_
 
-<!-- Animated bottom bar -->
 <svg width="100%" height="4" xmlns="http://www.w3.org/2000/svg">
   <rect width="100%" height="4" fill="#fff8fa"/>
   <rect width="20%" height="4" fill="#993556" opacity="0.6">
@@ -86,7 +63,7 @@
 
 HerVoice is a cross-border platform prototype that reduces friction around abortion access for people in Europe who face domestic restrictions.
 
-Patients can select a clinic slot, create a funding case, and later verify their identity at the clinic without their raw personal information ever being stored in the database. Clinics manage slots and receive payout only after patient identity is re-entered and matched. Funders lock support in **XRPL escrow**, and settlement is released on **XRPL Testnet** once verification succeeds.
+Patients can select a clinic slot, create a funding case, and later verify their identity at the clinic — without their raw personal information ever being stored in the database. Clinics manage slots and receive payout only after patient identity is re-entered and matched on arrival. Funders lock support in **XRPL escrow**, and settlement is released on **XRPL Testnet** once verification succeeds.
 
 The current MVP uses a **privacy-first hash-based identity model**:
 - raw patient identity is used only in-memory during a request
@@ -97,18 +74,18 @@ The current MVP uses a **privacy-first hash-based identity model**:
 
 ## Why This Matters
 
-|              | The Problem                                       | HerVoice's Answer                                                            |
-| ------------ | ------------------------------------------------- | --------------------------------------------------------------------------- |
-| **Patients** | Cross-border care is hard to coordinate safely    | Slot-based booking flow with no stored raw identity in the backend          |
-| **Clinics**  | Time and payment are both uncertain               | Managed clinic slots + XRPL escrow released only after identity match       |
-| **Funders**  | Support promises are hard to audit                | Transparent XRPL escrow creation and release with on-chain transaction logs |
-| **Everyone** | Sensitive medical and personal data risk exposure | Only hashed patient identity is stored; raw identity stays off-chain        |
+|              | The Problem                                    | HerVoice's Answer                                                           |
+| ------------ | ---------------------------------------------- | --------------------------------------------------------------------------- |
+| **Patients** | Cross-border care is hard to coordinate safely | Slot-based booking flow with no stored raw identity in the backend          |
+| **Clinics**  | Time and payment are both uncertain            | Managed clinic slots + XRPL escrow released only after identity match       |
+| **Funders**  | Support promises are hard to audit             | Transparent XRPL escrow creation and release with on-chain transaction logs |
+| **Everyone** | Sensitive medical and personal data risk       | Only hashed patient identity is stored; raw identity stays off-chain        |
 
 ---
 
 ## Live MVP Flow
 
-```text
+```
 Clinic creates available slots
         ↓
 Patient selects a slot and creates a funding case
@@ -122,15 +99,10 @@ Patient arrives at clinic and re-enters identity
 Hash matches active case + booked appointment
         ↓
 Escrow released to clinic on XRPL Testnet
+```
 
 ---
 
-
----
-
-## 4. 替换 `What's Live`
-
-```md
 ## What's Live
 
 ### Patient / Case Flow
@@ -153,7 +125,7 @@ Escrow released to clinic on XRPL Testnet
 - Lock XRP in escrow for a pending case
 - Track case status from `pending` → `active` → `released`
 
-### Backend-Only (Already Implemented)
+### Backend (Already Implemented)
 
 - Hash-based patient identity matching
 - Clinic slot creation
@@ -170,7 +142,6 @@ Escrow released to clinic on XRPL Testnet
 HerVoice is designed so that **raw patient identity is not stored in the backend database and never written on-chain.**
 
 **In-memory only (per request)**
-
 - Patient name
 - Date of birth
 - Insurance number
@@ -178,7 +149,6 @@ HerVoice is designed so that **raw patient identity is not stored in the backend
 These fields are used only to compute a SHA-256 hash and are then discarded.
 
 **Off-chain (database only)**
-
 - `patient_hash`
 - Clinic data
 - Slot data
@@ -187,9 +157,7 @@ These fields are used only to compute a SHA-256 hash and are then discarded.
 - XRPL transaction hashes and escrow metadata
 
 **On-chain (XRPL Testnet)**
-
-- `EscrowCreate`
-- `EscrowFinish`
+- `EscrowCreate` and `EscrowFinish` transactions
 - Transaction hashes
 - Memo containing a hashed patient identity anchor
 - Wallet-based settlement records
@@ -200,37 +168,38 @@ These fields are used only to compute a SHA-256 hash and are then discarded.
 
 ## XRPL Usage
 
-| Feature                              | Status  |
-| ------------------------------------ | ------- |
-| XRPL Testnet via QuickNode WebSocket | Active  |
-| `EscrowCreate`                       | Active  |
-| `EscrowFinish`                       | Active  |
-| PREIMAGE-SHA-256 crypto-conditions   | Active  |
-| Memo-based patient hash anchor       | Active  |
-| Slot-linked conditional payout       | Active  |
-| DID / Verifiable Credentials         | Roadmap |
-| Frontend wallet signing              | Roadmap |
-| AMM / DEX / NFTs                     | Roadmap |
+| Feature                              | Status   |
+| ------------------------------------ | -------- |
+| XRPL Testnet via QuickNode WebSocket | Active   |
+| `EscrowCreate`                       | Active   |
+| `EscrowFinish`                       | Active   |
+| PREIMAGE-SHA-256 crypto-conditions   | Active   |
+| Memo-based patient hash anchor       | Active   |
+| Slot-linked conditional payout       | Active   |
+| DID / Verifiable Credentials         | Roadmap  |
+| Frontend wallet signing              | Roadmap  |
+| AMM / DEX / NFTs                     | Roadmap  |
 
 ---
 
 ## Tech Stack
 
-```text
-Frontend          Backend                     Settlement
-─────────         ─────────────────────       ──────────
-Next.js 14        FastAPI                     XRPL Testnet
-React 18          SQLAlchemy                  xrpl-py
-Tailwind CSS      SQLite                      QuickNode WSS
+```
+Frontend          Backend                      Settlement
+─────────         ──────────────────────       ──────────
+Next.js 14        FastAPI                      XRPL Testnet
+React 18          SQLAlchemy                   xrpl-py
+Tailwind CSS      SQLite                       QuickNode WSS
                   python-dotenv
                   Hash-based identity model
                   Slot / appointment engine
+```
 
 ---
 
 ## Repository Structure
 
-```text
+```
 HerVoice/
 ├── backend/
 │   ├── main.py
@@ -263,6 +232,7 @@ HerVoice/
 │       ├── funder/
 │       └── clinic/
 └── README.md
+```
 
 ---
 
@@ -270,27 +240,27 @@ HerVoice/
 
 ### Patient / Public
 
-| Method  | Endpoint                 | Description                          |
-| ------- | ------------------------ | ------------------------------------ |
-| `POST`  | `/api/cases`             | Create funding case and bind a slot  |
-| `PATCH` | `/api/appointments/{id}` | Cancel or reschedule an appointment  |
-| `GET`   | `/api/clinics`           | List clinics with available slots    |
+| Method  | Endpoint                  | Description                         |
+| ------- | ------------------------- | ----------------------------------- |
+| `POST`  | `/api/cases`              | Create funding case and bind a slot |
+| `PATCH` | `/api/appointments/{id}`  | Cancel or reschedule an appointment |
+| `GET`   | `/api/clinics`            | List clinics with available slots   |
 
 ### Clinic
 
-| Method | Endpoint                  | Description                          |
-| ------ | ------------------------- | ------------------------------------ |
-| `POST` | `/api/clinics`            | Register a clinic                    |
-| `POST` | `/api/clinics/{id}/slots` | Create a slot                        |
+| Method | Endpoint                         | Description                        |
+| ------ | -------------------------------- | ---------------------------------- |
+| `POST` | `/api/clinics`                   | Register a clinic                  |
+| `POST` | `/api/clinics/{id}/slots`        | Create a slot                      |
 | `POST` | `/api/clinic/verify-and-release` | Verify identity and release escrow |
 
 ### Funder / Operations
 
-| Method | Endpoint         | Description                         |
-| ------ | ---------------- | ----------------------------------- |
-| `POST` | `/api/fund`      | Lock XRP in escrow for a case       |
-| `GET`  | `/api/dashboard` | Funding / clinic / appointment view |
-| `GET`  | `/health`        | Health check                        |
+| Method | Endpoint         | Description                        |
+| ------ | ---------------- | ---------------------------------- |
+| `POST` | `/api/fund`      | Lock XRP in escrow for a case      |
+| `GET`  | `/api/dashboard` | Funding / clinic / appointment view|
+| `GET`  | `/health`        | Health check                       |
 
 ---
 
@@ -340,7 +310,6 @@ npm run dev
 
 ---
 
-
 ## Testing The MVP
 
 ### As a Clinic
@@ -374,10 +343,9 @@ npm run dev
 
 - The backend stores only `patient_hash`, never raw patient identity
 - Raw identity is used only in-memory to compute SHA-256
-- The current MVP verifies **patient arrival and identity match**, not full surgery completion
+- The current MVP verifies **patient arrival and identity match**, not surgery completion
 - Slot booking is required before funding and release
 - The clinic verification endpoint will not release escrow if the identity does not match an active booked case
-- The frontend may still contain older wording in places; the backend source of truth is now the v3.5 slot + hash + XRPL flow
 
 ---
 
@@ -406,35 +374,16 @@ The current MVP is intentionally opinionated:
 
 <div align="center">
 
-<!-- Animated footer dots -->
 <svg width="200" height="16" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="20" cy="8" r="3" fill="#f4c0d1">
-    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="40" cy="8" r="3" fill="#993556">
-    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0.3s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="60" cy="8" r="3" fill="#f4c0d1">
-    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0.6s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="80" cy="8" r="3" fill="#993556">
-    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0.9s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="100" cy="8" r="3" fill="#f4c0d1">
-    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="1.2s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="120" cy="8" r="3" fill="#993556">
-    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="1.5s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="140" cy="8" r="3" fill="#f4c0d1">
-    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="1.8s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="160" cy="8" r="3" fill="#993556">
-    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="2.1s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="180" cy="8" r="3" fill="#f4c0d1">
-    <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="2.4s" repeatCount="indefinite"/>
-  </circle>
+  <circle cx="20" cy="8" r="3" fill="#f4c0d1"><animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0s" repeatCount="indefinite"/></circle>
+  <circle cx="40" cy="8" r="3" fill="#993556"><animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0.3s" repeatCount="indefinite"/></circle>
+  <circle cx="60" cy="8" r="3" fill="#f4c0d1"><animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0.6s" repeatCount="indefinite"/></circle>
+  <circle cx="80" cy="8" r="3" fill="#993556"><animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="0.9s" repeatCount="indefinite"/></circle>
+  <circle cx="100" cy="8" r="3" fill="#f4c0d1"><animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="1.2s" repeatCount="indefinite"/></circle>
+  <circle cx="120" cy="8" r="3" fill="#993556"><animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="1.5s" repeatCount="indefinite"/></circle>
+  <circle cx="140" cy="8" r="3" fill="#f4c0d1"><animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="1.8s" repeatCount="indefinite"/></circle>
+  <circle cx="160" cy="8" r="3" fill="#993556"><animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="2.1s" repeatCount="indefinite"/></circle>
+  <circle cx="180" cy="8" r="3" fill="#f4c0d1"><animate attributeName="opacity" values="1;0.2;1" dur="1.8s" begin="2.4s" repeatCount="indefinite"/></circle>
 </svg>
 
 <br/>
@@ -443,7 +392,6 @@ _Built with care at Hack the Block · Paris 2026_
 
 <br/>
 
-<!-- Animated footer bar -->
 <svg width="100%" height="8" xmlns="http://www.w3.org/2000/svg">
   <rect width="100%" height="8" fill="#993556"/>
   <rect width="30%" height="8" fill="#f4c0d1" opacity="0.5">
