@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import BrandLogo from "../BrandLogo";
+import FundingCaseOverlay from "./FundingCaseOverlay";
 
 const BRAND_COLOR = "#993556";
 const DASHBOARD_PREVIEW = {
@@ -188,6 +189,7 @@ export default function FunderDashboard({
   getUiStatus,
 }) {
   const [activeView, setActiveView] = useState("overview");
+  const [isFundingOverlayOpen, setIsFundingOverlayOpen] = useState(false);
   const totalReservations = Math.max(
     dashboard?.total_cases ?? 0,
     DASHBOARD_PREVIEW.totalCases
@@ -423,159 +425,9 @@ export default function FunderDashboard({
                 Funding cases
               </h1>
               <p className="text-sm text-slate-500">
-                Choose a reservation and lock support funds for it on XRPL.
+                Select a reservation card to open the funding details.
               </p>
             </div>
-
-            <form
-              onSubmit={onCreateFundingCase}
-              className="grid gap-4 rounded-3xl border border-slate-100 bg-slate-50 p-5 xl:grid-cols-[minmax(0,1fr)_auto]"
-            >
-              <div className="rounded-3xl border border-white bg-white p-5">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                      Ready to fund
-                    </div>
-                    <p className="mt-2 text-sm text-slate-500">
-                      {selectedCase
-                        ? "Review the selected reservation and continue."
-                        : "Select one reservation from the list below to continue."}
-                    </p>
-                  </div>
-
-                  {selectedCase ? (
-                    <div className="inline-flex w-fit rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-[#993556]">
-                      Selected
-                    </div>
-                  ) : null}
-                </div>
-
-                {selectedCase ? (
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    <div>
-                      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                        Reservation ID
-                      </div>
-                      <div className="mt-2 break-all font-mono text-sm text-slate-900">
-                        {selectedCase.patient_hash || selectedCase.case_id}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                        Amount
-                      </div>
-                      <div className="mt-2 text-sm font-semibold text-slate-900">
-                        {getDisplayAmount(selectedCase)} EUR
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                        Clinic
-                      </div>
-                      <div className="mt-2 text-sm text-slate-900">
-                        {selectedCase.clinic_name || "Clinic unavailable"}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                        Appointment
-                      </div>
-                      <div className="mt-2 text-sm text-slate-900">
-                        {formatDateTime(selectedCase.slot_datetime)}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mt-4 rounded-2xl border border-dashed border-slate-200 px-4 py-5 text-sm text-slate-500">
-                    No reservation selected yet.
-                  </div>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                disabled={
-                  isCreating ||
-                  !selectedCase ||
-                  getUiStatus(selectedCase) !== "pending"
-                }
-                className="inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 xl:self-center"
-                style={{ backgroundColor: BRAND_COLOR }}
-              >
-                {isCreating ? "Locking funds..." : "Create funding case"}
-              </button>
-
-              {isCreating ? (
-                <div className="xl:col-span-2">
-                  <DashboardSpinner text="Creating funding case..." />
-                </div>
-              ) : null}
-
-              {createdCase ? (
-                <div className="grid gap-4 rounded-3xl border border-emerald-200 bg-emerald-50 p-5 text-sm xl:col-span-2 md:grid-cols-2">
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                      Reservation ID
-                    </div>
-                    <div className="mt-2 break-all font-mono text-emerald-950">
-                      {createdCase.patient_hash || createdCase.case_id}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                      Case ID
-                    </div>
-                    <div className="mt-2 break-all font-mono text-emerald-950">
-                      {createdCase.case_id}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                      Amount
-                    </div>
-                    <div className="mt-2 font-semibold text-emerald-950">
-                      {getDisplayAmount(createdCase)} EUR
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                      Status
-                    </div>
-                    <div className="mt-2 font-semibold text-emerald-950">
-                      {formatStatusLabel(getUiStatus(createdCase))}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                      Clinic
-                    </div>
-                    <div className="mt-2 font-medium text-emerald-950">
-                      {createdCase.clinic_name || "Clinic unavailable"}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                      Appointment
-                    </div>
-                    <div className="mt-2 font-medium text-emerald-950">
-                      {formatDateTime(createdCase.slot_datetime)}
-                    </div>
-                  </div>
-                  <div className="md:col-span-2">
-                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                      Escrow tx hash
-                    </div>
-                    <div className="mt-2 break-all font-mono text-emerald-950">
-                      {createdCase.escrow_tx_hash}
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-            </form>
           </div>
 
           <div className="mt-6 rounded-3xl border border-slate-100 bg-slate-50 p-5">
@@ -585,7 +437,7 @@ export default function FunderDashboard({
                   Case list
                 </h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Select one reservation to prepare funding.
+                  Select a reservation card to open the funding details.
                 </p>
               </div>
 
@@ -629,7 +481,10 @@ export default function FunderDashboard({
                     <button
                       key={caseItem.case_id}
                       type="button"
-                      onClick={() => setSelectedCaseId(caseItem.case_id)}
+                      onClick={() => {
+                        setSelectedCaseId(caseItem.case_id);
+                        setIsFundingOverlayOpen(true);
+                      }}
                       className={`rounded-3xl border p-5 text-left transition ${
                         isSelected
                           ? "border-rose-300 bg-rose-50 shadow-[0_12px_30px_rgba(153,53,86,0.10)]"
@@ -717,7 +572,7 @@ export default function FunderDashboard({
                                 : "border border-slate-200 bg-white text-slate-600"
                             }`}
                           >
-                            {isSelected ? "Selected" : "Select reservation"}
+                            Open details
                           </span>
                         </div>
                       </div>
@@ -733,6 +588,18 @@ export default function FunderDashboard({
           </div>
         </section>
       </div>
+
+      {activeView === "cases" && isFundingOverlayOpen ? (
+        <FundingCaseOverlay
+          selectedCase={selectedCase}
+          createdCase={createdCase}
+          createError={createError}
+          isCreating={isCreating}
+          onCreateFundingCase={onCreateFundingCase}
+          onClose={() => setIsFundingOverlayOpen(false)}
+          getUiStatus={getUiStatus}
+        />
+      ) : null}
     </main>
   );
 }
