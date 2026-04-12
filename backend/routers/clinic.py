@@ -26,6 +26,7 @@ def verify_and_release_endpoint(
     return VerifyAndReleaseResponse(
         matched=result["matched"],
         case_id=result["case_id"],
+        appointment_id=result["appointment_id"],
         tx_hash=result["tx_hash"],
         amount_xrp=result["amount_xrp"],
         message=result["message"],

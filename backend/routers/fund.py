@@ -22,7 +22,7 @@ def create_fund(request: CreateFundRequest, db: Session = Depends(get_db)):
         amount_xrp=case.amount_xrp,
         escrow_tx_hash=case.tx_hash_create,
         status=case.status,
-        message="Escrow created. Patient can now redeem at clinic.",
+        message="Escrow created. Patient can now arrive at clinic for identity verification.",
     )
 
 # from fastapi import APIRouter, Depends, HTTPException

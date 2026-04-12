@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from schemas import CreateCaseRequest, CreateCaseResponse
-from services.case_service import create_patient_case
+from services.case_service import create_case_with_appointment
 
 router = APIRouter(prefix="/api/cases", tags=["cases"])
 
@@ -11,10 +11,11 @@ router = APIRouter(prefix="/api/cases", tags=["cases"])
 @router.post("", response_model=CreateCaseResponse)
 def create_case(request: CreateCaseRequest, db: Session = Depends(get_db)):
     try:
-        case = create_patient_case(
+        case, appointment = create_case_with_appointment(
             name=request.patient_identity.name,
             date_of_birth=request.patient_identity.date_of_birth,
             insurance_number=request.patient_identity.insurance_number,
+            slot_id=request.slot_id,
             amount_xrp=request.amount_xrp,
             db=db,
         )
@@ -23,9 +24,11 @@ def create_case(request: CreateCaseRequest, db: Session = Depends(get_db)):
 
     return CreateCaseResponse(
         case_id=case.id,
+        appointment_id=appointment.id,
+        slot_id=appointment.clinic_slot_id,
         amount_xrp=case.amount_xrp,
         status=case.status,
-        message="Case created. A funder will review and lock funds for your case.",
+        message="Case created and slot booked. A funder will review and lock funds for your case.",
     )
 
 # from fastapi import APIRouter, Depends, HTTPException

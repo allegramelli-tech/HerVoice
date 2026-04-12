@@ -1,7 +1,16 @@
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
+from typing import Optional
 
-from models import FundingCase, CaseStatus
+from models import (
+    FundingCase,
+    CaseStatus,
+    Clinic,
+    ClinicSlot,
+    SlotStatus,
+    Appointment,
+    AppointmentStatus,
+)
 from services.xrpl_service import (
     compute_patient_hash,
     generate_condition,
@@ -9,61 +18,220 @@ from services.xrpl_service import (
     finish_escrow,
     get_funder_wallet,
 )
-from config import CLINIC_WALLET_ADDRESS
 
 
-def create_patient_case(
+# --------------------
+# Clinic / Slot
+# --------------------
+
+def register_clinic(
+    name: str,
+    doctor_name: str,
+    address: str,
+    city: str,
+    xrpl_wallet_address: Optional[str],
+    db: Session,
+) -> Clinic:
+    existing = db.query(Clinic).filter(
+        Clinic.name == name,
+        Clinic.doctor_name == doctor_name,
+        Clinic.address == address,
+        Clinic.city == city,
+    ).first()
+    if existing:
+        raise ValueError("Clinic already exists")
+
+    clinic = Clinic(
+        name=name,
+        doctor_name=doctor_name,
+        address=address,
+        city=city,
+        xrpl_wallet_address=xrpl_wallet_address,
+    )
+    db.add(clinic)
+    db.commit()
+    db.refresh(clinic)
+    return clinic
+
+
+def create_slot(clinic_id: str, slot_datetime: datetime, db: Session) -> ClinicSlot:
+    clinic = db.query(Clinic).filter(Clinic.id == clinic_id).first()
+    if not clinic:
+        raise ValueError("Clinic not found")
+
+    existing = db.query(ClinicSlot).filter(
+        ClinicSlot.clinic_id == clinic_id,
+        ClinicSlot.slot_datetime == slot_datetime,
+    ).first()
+    if existing:
+        raise ValueError("Slot already exists for this clinic and time")
+
+    slot = ClinicSlot(
+        clinic_id=clinic_id,
+        slot_datetime=slot_datetime,
+        status=SlotStatus.AVAILABLE,
+    )
+    db.add(slot)
+    db.commit()
+    db.refresh(slot)
+    return slot
+
+
+def list_clinics_with_available_slots(db: Session) -> list[Clinic]:
+    return db.query(Clinic).all()
+
+
+# --------------------
+# Case + Appointment
+# --------------------
+
+def create_case_with_appointment(
     name: str,
     date_of_birth: str,
     insurance_number: str,
+    slot_id: str,
     amount_xrp: int,
     db: Session,
-) -> FundingCase:
-    """
-    Patient creates a funding case.
-
-    1. Compute patient_hash from identity fields (fields are NOT stored).
-    2. Reject if patient_hash already has an ACTIVE case.
-       RELEASED cases are NOT blocked.
-    3. Create FundingCase with status PENDING, no escrow yet.
-    """
+) -> tuple[FundingCase, Appointment]:
     patient_hash = compute_patient_hash(name, date_of_birth, insurance_number)
 
-    existing = db.query(FundingCase).filter(
+    existing_active = db.query(FundingCase).filter(
         FundingCase.patient_hash == patient_hash,
         FundingCase.status == CaseStatus.ACTIVE,
     ).first()
-    if existing:
+    if existing_active:
         raise ValueError(
             "An active funding case already exists for this patient. "
             "You cannot have two active cases at the same time."
         )
 
+    slot = db.query(ClinicSlot).filter(ClinicSlot.id == slot_id).first()
+    if not slot:
+        raise ValueError("Slot not found")
+
+    if slot.status != SlotStatus.AVAILABLE:
+        raise ValueError(f"Slot is not available (status: {slot.status})")
+
     amount_drops = amount_xrp * 1_000_000
 
     case = FundingCase(
         patient_hash=patient_hash,
-        clinic_address=CLINIC_WALLET_ADDRESS,
+        clinic_address=slot.clinic.xrpl_wallet_address or "",
         amount_xrp=amount_xrp,
         amount_drops=amount_drops,
         status=CaseStatus.PENDING,
     )
     db.add(case)
+    db.flush()
+
+    appointment = Appointment(
+        funding_case_id=case.id,
+        clinic_slot_id=slot.id,
+        status=AppointmentStatus.BOOKED,
+    )
+    db.add(appointment)
+
+    slot.status = SlotStatus.BOOKED
+
     db.commit()
     db.refresh(case)
-    return case
+    db.refresh(appointment)
+    return case, appointment
 
+
+def cancel_appointment(appointment_id: str, db: Session) -> Appointment:
+    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
+    if not appointment:
+        raise ValueError("Appointment not found")
+
+    if appointment.status == AppointmentStatus.COMPLETED:
+        raise ValueError("Cannot cancel a completed appointment")
+
+    if appointment.status in (
+        AppointmentStatus.CANCELLED_BY_USER,
+        AppointmentStatus.CANCELLED_BY_CLINIC,
+    ):
+        raise ValueError("Appointment is already cancelled")
+
+    case = appointment.funding_case
+    if case.status == CaseStatus.RELEASED:
+        raise ValueError("Cannot cancel an appointment for a released case")
+
+    slot = appointment.slot
+    if slot and slot.status != SlotStatus.CANCELLED:
+        slot.status = SlotStatus.AVAILABLE
+
+    appointment.status = AppointmentStatus.CANCELLED_BY_USER
+    appointment.updated_at = datetime.now(timezone.utc)
+
+    if case.status != CaseStatus.RELEASED:
+        case.status = CaseStatus.CANCELLED
+
+    db.commit()
+    db.refresh(appointment)
+    return appointment
+
+
+def reschedule_appointment(appointment_id: str, new_slot_id: str, db: Session) -> Appointment:
+    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
+    if not appointment:
+        raise ValueError("Appointment not found")
+
+    if appointment.status == AppointmentStatus.COMPLETED:
+        raise ValueError("Cannot reschedule a completed appointment")
+
+    if appointment.status in (
+        AppointmentStatus.CANCELLED_BY_USER,
+        AppointmentStatus.CANCELLED_BY_CLINIC,
+    ):
+        raise ValueError("Cannot reschedule a cancelled appointment")
+
+    case = appointment.funding_case
+    if case.status == CaseStatus.RELEASED:
+        raise ValueError("Cannot reschedule an appointment for a released case")
+
+    new_slot = db.query(ClinicSlot).filter(ClinicSlot.id == new_slot_id).first()
+    if not new_slot:
+        raise ValueError("New slot not found")
+
+    if new_slot.status != SlotStatus.AVAILABLE:
+        raise ValueError(f"New slot is not available (status: {new_slot.status})")
+
+    old_slot = appointment.slot
+    if old_slot.id == new_slot.id:
+        raise ValueError("New slot must be different from current slot")
+
+    if old_slot.status != SlotStatus.CANCELLED:
+        old_slot.status = SlotStatus.AVAILABLE
+
+    new_slot.status = SlotStatus.BOOKED
+    appointment.clinic_slot_id = new_slot.id
+    appointment.status = AppointmentStatus.BOOKED
+    appointment.updated_at = datetime.now(timezone.utc)
+
+    db.commit()
+    db.refresh(appointment)
+    return appointment
+
+
+# --------------------
+# Funding
+# --------------------
 
 def create_escrow_for_case(case_id: str, db: Session) -> FundingCase:
-    """
-    Funder creates escrow for an existing PENDING case.
-    """
     case = db.query(FundingCase).filter(FundingCase.id == case_id).first()
     if not case:
         raise ValueError("Case not found")
 
     if case.status != CaseStatus.PENDING:
         raise ValueError(f"Case is not pending (status: {case.status})")
+
+    appointment = case.appointment
+    if not appointment:
+        raise ValueError("Case does not have an appointment")
+
+    if appointment.status != AppointmentStatus.BOOKED:
+        raise ValueError(f"Appointment is not bookable for funding (status: {appointment.status})")
 
     funder = get_funder_wallet()
     condition_pair = generate_condition()
@@ -86,20 +254,16 @@ def create_escrow_for_case(case_id: str, db: Session) -> FundingCase:
     return case
 
 
+# --------------------
+# Clinic verify + release
+# --------------------
+
 def verify_and_release(
     name: str,
     date_of_birth: str,
     insurance_number: str,
     db: Session,
 ) -> dict:
-    """
-    Patient arrives at clinic and enters their identity.
-
-    1. Compute patient_hash from input fields (fields are NOT stored).
-    2. Look up ACTIVE FundingCase with matching patient_hash.
-    3. If no match: return matched=False.
-    4. If match: trigger EscrowFinish, update case to RELEASED.
-    """
     patient_hash = compute_patient_hash(name, date_of_birth, insurance_number)
 
     case = db.query(FundingCase).filter(
@@ -111,9 +275,31 @@ def verify_and_release(
         return {
             "matched": False,
             "case_id": None,
+            "appointment_id": None,
             "tx_hash": None,
             "amount_xrp": None,
             "message": "No active funding found for this identity.",
+        }
+
+    appointment = case.appointment
+    if not appointment:
+        return {
+            "matched": False,
+            "case_id": None,
+            "appointment_id": None,
+            "tx_hash": None,
+            "amount_xrp": None,
+            "message": "No appointment found for this active funding case.",
+        }
+
+    if appointment.status != AppointmentStatus.BOOKED:
+        return {
+            "matched": False,
+            "case_id": case.id,
+            "appointment_id": appointment.id,
+            "tx_hash": None,
+            "amount_xrp": None,
+            "message": f"Appointment is not eligible for release (status: {appointment.status}).",
         }
 
     try:
@@ -129,12 +315,18 @@ def verify_and_release(
     case.tx_hash_finish = result["tx_hash"]
     case.status = CaseStatus.RELEASED
     case.released_at = datetime.now(timezone.utc)
+
+    appointment.status = AppointmentStatus.COMPLETED
+    appointment.updated_at = datetime.now(timezone.utc)
+
     db.commit()
     db.refresh(case)
+    db.refresh(appointment)
 
     return {
         "matched": True,
         "case_id": case.id,
+        "appointment_id": appointment.id,
         "tx_hash": result["tx_hash"],
         "amount_xrp": case.amount_xrp,
         "message": "Identity verified. Payment released to clinic.",
