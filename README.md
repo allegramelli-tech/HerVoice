@@ -400,4 +400,14 @@ _Built with care at Hack the Block · Paris Blockchain Week 2026_
   </rect>
 </svg>
 
+<br/>
+
+<h2 style="margin: 18px 0 10px; color: #2C2C2A;">Team</h2>
+
+<p align="center" style="margin: 0;">
+  <a href="https://www.linkedin.com/in/allegra-melli-roma/" style="display: inline-block; margin: 0 14px; font-size: 28px; font-weight: 700; color: #993556; text-decoration: none;">Allegra</a>
+  <a href="https://www.linkedin.com/in/huilin-guo-782922286/" style="display: inline-block; margin: 0 14px; font-size: 28px; font-weight: 700; color: #2C2C2A; text-decoration: none;">Huilin</a>
+  <a href="https://www.linkedin.com/in/rebecca-thinnes-ba1304389/?locale=de" style="display: inline-block; margin: 0 14px; font-size: 28px; font-weight: 700; color: #993556; text-decoration: none;">Rebecca</a>
+</p>
+
 </div>
