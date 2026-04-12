@@ -7,7 +7,6 @@ from services.case_service import verify_and_release
 
 router = APIRouter(prefix="/api/clinic", tags=["clinic"])
 
-
 @router.post("/verify-and-release", response_model=VerifyAndReleaseResponse)
 def verify_and_release_endpoint(
     request: VerifyAndReleaseRequest,
@@ -31,6 +30,8 @@ def verify_and_release_endpoint(
         amount_xrp=result["amount_xrp"],
         message=result["message"],
     )
+    
+
 
 # from fastapi import APIRouter, Depends, HTTPException
 # from sqlalchemy.orm import Session

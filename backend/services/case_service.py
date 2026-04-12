@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 from typing import Optional
+import random
+import string
 
 from models import (
     FundingCase,
@@ -18,7 +20,6 @@ from services.xrpl_service import (
     finish_escrow,
     get_funder_wallet,
 )
-
 
 # --------------------
 # Clinic / Slot
@@ -90,6 +91,8 @@ def create_case_with_appointment(
     date_of_birth: str,
     insurance_number: str,
     slot_id: str,
+    email: str,
+    country: Optional[str],
     amount_xrp: int,
     db: Session,
 ) -> tuple[FundingCase, Appointment]:
@@ -115,12 +118,15 @@ def create_case_with_appointment(
     amount_drops = amount_xrp * 1_000_000
 
     case = FundingCase(
-        patient_hash=patient_hash,
-        clinic_address=slot.clinic.xrpl_wallet_address or "",
-        amount_xrp=amount_xrp,
-        amount_drops=amount_drops,
-        status=CaseStatus.PENDING,
-    )
+		patient_hash=patient_hash,
+		access_code=access_code,
+		email=email,
+		country=country,
+		clinic_address=slot.clinic.xrpl_wallet_address or "",
+		amount_xrp=amount_xrp,
+		amount_drops=amount_drops,
+		status=CaseStatus.PENDING,
+	)
     db.add(case)
     db.flush()
 
@@ -139,7 +145,7 @@ def create_case_with_appointment(
     return case, appointment
 
 
-def cancel_appointment(appointment_id: str, db: Session) -> Appointment:
+def cancel_appointment(appointment_id: str, access_code: str, db: Session) -> Appointment:
     appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
     if not appointment:
         raise ValueError("Appointment not found")
@@ -154,6 +160,8 @@ def cancel_appointment(appointment_id: str, db: Session) -> Appointment:
         raise ValueError("Appointment is already cancelled")
 
     case = appointment.funding_case
+    if case.access_code != access_code:
+        raise ValueError("Invalid access code")
     if case.status == CaseStatus.RELEASED:
         raise ValueError("Cannot cancel an appointment for a released case")
 
@@ -172,7 +180,7 @@ def cancel_appointment(appointment_id: str, db: Session) -> Appointment:
     return appointment
 
 
-def reschedule_appointment(appointment_id: str, new_slot_id: str, db: Session) -> Appointment:
+def reschedule_appointment(appointment_id: str, access_code: str, new_slot_id: str, db: Session) -> Appointment:
     appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
     if not appointment:
         raise ValueError("Appointment not found")
@@ -187,6 +195,8 @@ def reschedule_appointment(appointment_id: str, new_slot_id: str, db: Session) -
         raise ValueError("Cannot reschedule a cancelled appointment")
 
     case = appointment.funding_case
+    if case.access_code != access_code:
+        raise ValueError("Invalid access code")
     if case.status == CaseStatus.RELEASED:
         raise ValueError("Cannot reschedule an appointment for a released case")
 
@@ -330,4 +340,18 @@ def verify_and_release(
         "tx_hash": result["tx_hash"],
         "amount_xrp": case.amount_xrp,
         "message": "Identity verified. Payment released to clinic.",
+    }
+    
+def recover_access_code_by_email(email: str, db: Session) -> dict:
+    case = db.query(FundingCase).filter(FundingCase.email == email).order_by(FundingCase.created_at.desc()).first()
+    if not case:
+        raise ValueError("No case found for this email")
+
+    appointment = case.appointment
+
+    return {
+        "case_id": case.id,
+        "appointment_id": appointment.id if appointment else None,
+        "access_code": case.access_code,
+        "message": "Access code recovered successfully.",
     }

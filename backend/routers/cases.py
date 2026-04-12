@@ -12,24 +12,28 @@ router = APIRouter(prefix="/api/cases", tags=["cases"])
 def create_case(request: CreateCaseRequest, db: Session = Depends(get_db)):
     try:
         case, appointment = create_case_with_appointment(
-            name=request.patient_identity.name,
-            date_of_birth=request.patient_identity.date_of_birth,
-            insurance_number=request.patient_identity.insurance_number,
-            slot_id=request.slot_id,
-            amount_xrp=request.amount_xrp,
-            db=db,
-        )
+			name=request.patient_identity.name,
+			date_of_birth=request.patient_identity.date_of_birth,
+			insurance_number=request.patient_identity.insurance_number,
+			slot_id=request.slot_id,
+			email=request.email,
+			country=request.country,
+			amount_xrp=request.amount_xrp,
+			db=db,
+		)
+        
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
     return CreateCaseResponse(
-        case_id=case.id,
-        appointment_id=appointment.id,
-        slot_id=appointment.clinic_slot_id,
-        amount_xrp=case.amount_xrp,
-        status=case.status,
-        message="Case created and slot booked. A funder will review and lock funds for your case.",
-    )
+		case_id=case.id,
+		appointment_id=appointment.id,
+		slot_id=appointment.clinic_slot_id,
+		access_code=case.access_code,
+		amount_xrp=case.amount_xrp,
+		status=case.status,
+		message="Case created and slot booked. Save your access code to manage your appointment later.",
+	)
 
 # from fastapi import APIRouter, Depends, HTTPException
 # from sqlalchemy.orm import Session

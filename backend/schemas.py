@@ -59,6 +59,8 @@ class ClinicWithSlotsResponse(BaseModel):
 class CreateCaseRequest(BaseModel):
     patient_identity: PatientIdentity
     slot_id: str
+    email: str
+    country: Optional[str] = None
     amount_xrp: int = Field(..., ge=1, le=1000, description="Amount of funding needed in XRP")
 
 
@@ -66,6 +68,7 @@ class CreateCaseResponse(BaseModel):
     case_id: str
     appointment_id: str
     slot_id: str
+    access_code: str
     amount_xrp: int
     status: CaseStatus
     message: str
@@ -82,8 +85,19 @@ class AppointmentResponse(BaseModel):
 
 
 class UpdateAppointmentRequest(BaseModel):
+    access_code: str
     action: str   # "reschedule" | "cancel"
     new_slot_id: Optional[str] = None
+    
+class RecoverAccessCodeRequest(BaseModel):
+    email: str
+
+
+class RecoverAccessCodeResponse(BaseModel):
+    case_id: str
+    appointment_id: Optional[str]
+    access_code: str
+    message: str
 
 
 # --------------------

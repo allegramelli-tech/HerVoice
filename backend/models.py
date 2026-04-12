@@ -60,8 +60,13 @@ class FundingCase(Base):
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
 
-    # Only patient-related data stored in DB
+    # Only patient-related identity data stored for matching
     patient_hash = Column(String, nullable=False)
+
+    # Recovery / case management (OFF-CHAIN ONLY)
+    access_code = Column(String, nullable=False, unique=True)
+    email = Column(String, nullable=False)
+    country = Column(String, nullable=True)
 
     funder_address = Column(String, nullable=True)
     clinic_address = Column(String, nullable=False)
