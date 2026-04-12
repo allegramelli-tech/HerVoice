@@ -27,6 +27,9 @@ def compute_patient_hash(name: str, date_of_birth: str, insurance_number: str) -
 
     Returns uppercase hex string.
     """
+    
+    date_of_birth = date_of_birth.strip().replace("/", "-")
+    
     normalized = (
         name.strip().lower()
         + date_of_birth.strip()
