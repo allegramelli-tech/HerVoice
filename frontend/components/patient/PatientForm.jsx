@@ -418,7 +418,7 @@ export default function PatientForm({
           className="inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           style={{ backgroundColor: BRAND_COLOR }}
         >
-          Send request
+          Confirm booking
         </button>
       </div>
     </form>

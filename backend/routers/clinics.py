@@ -9,7 +9,12 @@ from schemas import (
     SlotResponse,
     ClinicWithSlotsResponse,
 )
-from services.case_service import register_clinic, create_slot, list_clinics_with_available_slots
+from services.case_service import (
+    register_clinic,
+    create_slot,
+    delete_slot,
+    list_clinics_with_available_slots,
+)
 from models import SlotStatus
 
 router = APIRouter(prefix="/api/clinics", tags=["clinics"])
@@ -52,6 +57,16 @@ def create_clinic_slot(clinic_id: str, request: SlotCreateRequest, db: Session =
         slot_datetime=slot.slot_datetime,
         status=slot.status,
     )
+
+
+@router.delete("/{clinic_id}/slots/{slot_id}")
+def delete_clinic_slot(clinic_id: str, slot_id: str, db: Session = Depends(get_db)):
+    try:
+        delete_slot(clinic_id=clinic_id, slot_id=slot_id, db=db)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    return {"message": "Slot deleted successfully."}
 
 
 @router.get("", response_model=list[ClinicWithSlotsResponse])

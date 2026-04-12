@@ -115,7 +115,7 @@ export default function FunderPage() {
     setCreatedCase(null);
 
     if (!selectedCaseId) {
-      setCreateError("Select a pending reservation before locking funds.");
+      setCreateError("Select an upcoming reservation before locking funds.");
       return;
     }
 

@@ -33,6 +33,7 @@ export default function ReservationVerification({
   formData,
   onChange,
   onSubmit,
+  onBack,
   isVerifying,
   actionError,
   verification,
@@ -44,6 +45,17 @@ export default function ReservationVerification({
   return (
     <section className="rounded-3xl border border-white/70 bg-white p-6 shadow-[0_20px_50px_rgba(148,163,184,0.12)]">
       <div className="flex flex-col gap-6">
+        <div className="flex items-center justify-between gap-4">
+          <div />
+          <button
+            type="button"
+            onClick={onBack}
+            className="inline-flex items-center justify-center rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:text-slate-900"
+          >
+            Back to requests
+          </button>
+        </div>
+
         <div className="rounded-3xl border border-rose-100 bg-rose-50/70 p-5">
           <div className="inline-flex rounded-full border border-rose-100 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#993556]">
             Reservation verification
@@ -91,17 +103,6 @@ export default function ReservationVerification({
         <form onSubmit={onSubmit} className="grid gap-4">
           <div className="grid gap-4 md:grid-cols-2">
             <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
-              Last name
-              <input
-                name="lastName"
-                value={formData.lastName}
-                onChange={onChange}
-                className={inputClassName}
-                placeholder="Enter last name"
-              />
-            </label>
-
-            <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
               First name
               <input
                 name="firstName"
@@ -109,6 +110,17 @@ export default function ReservationVerification({
                 onChange={onChange}
                 className={inputClassName}
                 placeholder="Enter first name"
+              />
+            </label>
+
+            <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+              Last name
+              <input
+                name="lastName"
+                value={formData.lastName}
+                onChange={onChange}
+                className={inputClassName}
+                placeholder="Enter last name"
               />
             </label>
 

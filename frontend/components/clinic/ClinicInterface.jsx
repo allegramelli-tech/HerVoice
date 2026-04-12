@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import BrandLogo from "../BrandLogo";
 import ReservationVerification from "./ReservationVerification";
 
@@ -40,6 +41,22 @@ function getBadgeClasses(status) {
   return "border-amber-200 bg-amber-50 text-amber-700";
 }
 
+function formatOperationStatusLabel(status) {
+  if (status === "Pending") {
+    return "Upcoming";
+  }
+
+  if (status === "Confirmed") {
+    return "Completed";
+  }
+
+  if (status === "Released") {
+    return "Cancelled";
+  }
+
+  return status;
+}
+
 function formatDateTime(value) {
   if (!value) return "Unavailable";
 
@@ -66,6 +83,8 @@ export default function ClinicInterface({
   onSlotDateTimeChange,
   onCreateSlot,
   isCreatingSlot,
+  onDeleteSlot,
+  deletingSlotId,
   slotError,
   slotSuccess,
   incomingRequests,
@@ -77,11 +96,14 @@ export default function ClinicInterface({
   verificationFields,
   onVerificationFieldChange,
   onVerify,
+  onCloseVerification,
   isVerifying,
   actionError,
   verification,
   getUiStatus,
 }) {
+  const [activeView, setActiveView] = useState("operations");
+
   const totalRequests = incomingRequests.length;
   const pendingRequests = incomingRequests.filter(
     (caseItem) => getUiStatus(caseItem) === "Pending"
@@ -95,14 +117,14 @@ export default function ClinicInterface({
 
   const filters = [
     { value: "all", label: "Total requests", count: totalRequests, status: "All" },
-    { value: "pending", label: "Pending", count: pendingRequests, status: "Pending" },
+    { value: "pending", label: "Upcoming", count: pendingRequests, status: "Pending" },
     {
       value: "confirmed",
-      label: "Confirmed",
+      label: "Completed",
       count: confirmedRequests,
       status: "Confirmed",
     },
-    { value: "released", label: "Released", count: releasedRequests, status: "Released" },
+    { value: "released", label: "Cancelled", count: releasedRequests, status: "Released" },
   ];
 
   return (
@@ -136,11 +158,49 @@ export default function ClinicInterface({
       </header>
 
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+        <section className="rounded-3xl border border-white/70 bg-white p-4 shadow-[0_20px_50px_rgba(148,163,184,0.12)]">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                Workspace view
+              </div>
+              <div className="mt-1 text-sm text-slate-600">
+                Switch between managing time slots and reviewing reservations.
+              </div>
+            </div>
+
+            <div className="inline-flex rounded-full border border-slate-200 bg-slate-50 p-1">
+              {[
+                ["timeslots", "Time slots"],
+                ["operations", "Clinic operations"],
+              ].map(([value, label]) => {
+                const isActive = activeView === value;
+
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setActiveView(value)}
+                    className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                      isActive
+                        ? "bg-[#993556] text-white shadow-[0_10px_24px_rgba(153,53,86,0.22)]"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {activeView === "timeslots" ? (
           <section className="rounded-3xl border border-white/70 bg-white p-6 shadow-[0_20px_50px_rgba(148,163,184,0.12)]">
             <div className="flex flex-col gap-5">
               <form
                 onSubmit={onCreateSlot}
-                className="grid gap-4 rounded-3xl border border-slate-100 bg-[linear-gradient(180deg,_#fff9fb_0%,_#ffffff_100%)] p-5 xl:grid-cols-[minmax(0,1fr)_auto]"
+                className="grid gap-4 rounded-3xl border border-slate-100 bg-[linear-gradient(180deg,_#fff9fb_0%,_#ffffff_100%)] p-5"
               >
                 <div className="rounded-3xl border border-white bg-white p-4 shadow-[0_12px_30px_rgba(15,23,42,0.04)]">
                   <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
@@ -181,229 +241,242 @@ export default function ClinicInterface({
 
                 {isLoadingClinics ? <Spinner text="Loading clinic profile..." /> : null}
 
-              {clinicsError ? (
-                <div className="xl:col-span-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
-                  {clinicsError}
-                </div>
-              ) : null}
-
-              {slotError ? (
-                <div className="xl:col-span-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
-                  {slotError}
-                </div>
-              ) : null}
-
-              {slotSuccess ? (
-                <div className="xl:col-span-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-                  {slotSuccess}
-                </div>
-              ) : null}
-            </form>
-
-            {selectedClinic ? (
-              <div className="rounded-3xl border border-slate-100 bg-slate-50 p-5">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                      Selected clinic
-                    </div>
-                    <div className="mt-2 text-lg font-semibold text-slate-900">
-                      {selectedClinic.name}
-                    </div>
-                    <div className="mt-1 text-sm text-slate-600">
-                      {selectedClinic.city}
-                    </div>
-                    <div className="mt-1 text-sm text-slate-500">
-                      {selectedClinic.address}
-                    </div>
+                {clinicsError ? (
+                  <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                    {clinicsError}
                   </div>
+                ) : null}
 
-                  <div className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
-                    {selectedClinic.available_slots?.length || 0} open slots
+                {slotError ? (
+                  <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                    {slotError}
                   </div>
-                </div>
+                ) : null}
 
-                {selectedClinic.available_slots?.length ? (
-                  <div className="mt-4 grid gap-3">
-                    {selectedClinic.available_slots.map((slot) => (
-                      <div
-                        key={slot.id}
-                        className="rounded-2xl border border-slate-200 bg-white px-4 py-4"
-                      >
-                        <div className="text-sm font-semibold text-slate-900">
-                          {formatDateTime(slot.slot_datetime)}
-                        </div>
-                        <div className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">
-                          {slot.status}
-                        </div>
-                      </div>
-                    ))}
+                {slotSuccess ? (
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                    {slotSuccess}
                   </div>
-                ) : (
-                  <div className="mt-4 rounded-2xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
-                    This clinic does not have any open time slots yet.
-                  </div>
-                )}
-              </div>
-            ) : null}
-          </div>
-        </section>
+                ) : null}
+              </form>
 
-        <section className="rounded-3xl border border-white/70 bg-white p-6 shadow-[0_20px_50px_rgba(148,163,184,0.12)]">
-          <div className="flex flex-col gap-5">
-            <div>
-              <div className="inline-flex w-fit rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#993556]">
-                Clinic operations
-              </div>
-              <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900">
-                Review and verify incoming reservations
-              </h1>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {filters.map((filter) => {
-                const isActive = requestFilter === filter.value;
-                return (
-                  <button
-                    key={filter.value}
-                    type="button"
-                    onClick={() => setRequestFilter(filter.value)}
-                    className={`rounded-3xl border p-5 text-left transition duration-200 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 ${getStatusClasses(
-                      filter.status,
-                      isActive
-                    )}`}
-                    aria-pressed={isActive}
-                  >
-                    <div className="flex items-center justify-between gap-4">
+              {selectedClinic ? (
+                <div className="rounded-3xl border border-slate-100 bg-slate-50 p-5">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
                       <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                        {filter.label}
+                        Selected clinic
                       </div>
-                      <div
-                        className={`inline-flex h-8 min-w-[2rem] items-center justify-center rounded-full px-2 text-xs font-semibold ${
-                          isActive
-                            ? "bg-[#993556] text-white"
-                            : "border border-slate-200 bg-slate-50 text-slate-600"
-                        }`}
-                      >
-                        {filter.count}
+                      <div className="mt-2 text-lg font-semibold text-slate-900">
+                        {selectedClinic.name}
+                      </div>
+                      <div className="mt-1 text-sm text-slate-600">
+                        {selectedClinic.city}
+                      </div>
+                      <div className="mt-1 text-sm text-slate-500">
+                        {selectedClinic.address}
                       </div>
                     </div>
-                    <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
-                      <span>{isActive ? "Selected filter" : "View requests"}</span>
-                      <span aria-hidden="true">→</span>
+
+                    <div className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
+                      {selectedClinic.available_slots?.length || 0} open slots
                     </div>
-                  </button>
-                );
-              })}
+                  </div>
+
+                  {selectedClinic.available_slots?.length ? (
+                    <div className="mt-4 grid gap-3">
+                      {selectedClinic.available_slots.map((slot) => (
+                        <div
+                          key={slot.id}
+                          className="rounded-2xl border border-slate-200 bg-white px-4 py-4"
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <div className="text-sm font-semibold text-slate-900">
+                                {formatDateTime(slot.slot_datetime)}
+                              </div>
+                              <div className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">
+                                {slot.status}
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => onDeleteSlot(slot.id)}
+                              disabled={deletingSlotId === slot.id}
+                              className="inline-flex items-center justify-center rounded-full border border-rose-200 px-3 py-1.5 text-xs font-semibold text-[#993556] transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {deletingSlotId === slot.id ? "Deleting..." : "Delete"}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="mt-4 rounded-2xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
+                      This clinic does not have any open time slots yet.
+                    </div>
+                  )}
+                </div>
+              ) : null}
             </div>
+          </section>
+        ) : null}
 
-              <div>
-                <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
-                  Incoming requests
-                </h2>
-                <p className="mt-2 text-sm text-slate-500">
-                  Select a request below to open the reservation verification step.
-                </p>
-              </div>
-
-            {isLoadingRequests ? <Spinner text="Loading incoming requests..." /> : null}
-
-            {requestsError ? (
-              <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
-                {requestsError}
-              </div>
-            ) : null}
-
-            {filteredRequests.length ? (
-              <div className="grid gap-4">
-                {filteredRequests.map((request) => {
-                  const isSelected = selectedRequest?.case_id === request.case_id;
-                  const status = getUiStatus(request);
-
-                  return (
-                    <button
-                      key={request.case_id}
-                      type="button"
-                      onClick={() => onSelectRequest(request)}
-                      className={`rounded-3xl border p-5 text-left transition ${
-                        isSelected
-                          ? "border-rose-300 bg-rose-50 shadow-[0_12px_30px_rgba(153,53,86,0.10)]"
-                          : "border-slate-100 bg-white hover:border-slate-200 hover:bg-slate-50/80"
-                      }`}
-                    >
-                      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                        <div className="grid flex-1 gap-4 md:grid-cols-2">
-                          <div>
-                            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                              Reservation ID
-                            </div>
-                            <div className="mt-2 break-all font-mono text-sm text-slate-900">
-                              {request.patient_hash || request.case_id}
-                            </div>
-                          </div>
-
-                          <div>
-                            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                              Reservation date
-                            </div>
-                            <div className="mt-2 text-sm font-medium text-slate-900">
-                              {formatDateTime(request.created_at)}
-                            </div>
-                          </div>
-
-                          <div>
-                            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                              Appointment time
-                            </div>
-                            <div className="mt-2 text-sm font-medium text-slate-900">
-                              {formatDateTime(request.slot_datetime)}
-                            </div>
-                          </div>
-
-                          <div>
-                            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                              Clinic
-                            </div>
-                            <div className="mt-2 text-sm font-medium text-slate-900">
-                              {request.clinic_name || "Clinic unavailable"}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-3">
-                          <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
-                            {request.amount_xrp} EUR
-                          </div>
-                          <span
-                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${getBadgeClasses(
-                              status
-                            )}`}
-                          >
-                            {status}
-                          </span>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+        {activeView === "operations" ? (
+          <>
+            {selectedRequest ? (
+              <ReservationVerification
+                selectedRequest={selectedRequest}
+                formData={verificationFields}
+                onChange={onVerificationFieldChange}
+                onSubmit={onVerify}
+                onBack={onCloseVerification}
+                isVerifying={isVerifying}
+                actionError={actionError}
+                verification={verification}
+              />
             ) : (
-              <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500">
-                No requests available for this filter yet.
-              </div>
-            )}
-          </div>
-        </section>
+              <section className="rounded-3xl border border-white/70 bg-white p-6 shadow-[0_20px_50px_rgba(148,163,184,0.12)]">
+                <div className="flex flex-col gap-5">
+                  <div>
+                    <div className="inline-flex w-fit rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#993556]">
+                      Clinic operations
+                    </div>
+                    <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900">
+                      Review and verify incoming reservations
+                    </h1>
+                  </div>
 
-        <ReservationVerification
-          selectedRequest={selectedRequest}
-          formData={verificationFields}
-          onChange={onVerificationFieldChange}
-          onSubmit={onVerify}
-          isVerifying={isVerifying}
-          actionError={actionError}
-          verification={verification}
-        />
+                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    {filters.map((filter) => {
+                      const isActive = requestFilter === filter.value;
+                      return (
+                        <button
+                          key={filter.value}
+                          type="button"
+                          onClick={() => setRequestFilter(filter.value)}
+                          className={`rounded-3xl border p-5 text-left transition duration-200 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 ${getStatusClasses(
+                            filter.status,
+                            isActive
+                          )}`}
+                          aria-pressed={isActive}
+                        >
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                              {filter.label}
+                            </div>
+                            <div
+                              className={`inline-flex h-8 min-w-[2rem] items-center justify-center rounded-full px-2 text-xs font-semibold ${
+                                isActive
+                                  ? "bg-[#993556] text-white"
+                                  : "border border-slate-200 bg-slate-50 text-slate-600"
+                              }`}
+                            >
+                              {filter.count}
+                            </div>
+                          </div>
+                          <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
+                            <span>{isActive ? "Selected filter" : "View requests"}</span>
+                            <span aria-hidden="true">→</span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div>
+                    <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+                      Incoming requests
+                    </h2>
+                    <p className="mt-2 text-sm text-slate-500">
+                      Select a request below to open the reservation verification step.
+                    </p>
+                  </div>
+
+                  {isLoadingRequests ? <Spinner text="Loading incoming requests..." /> : null}
+
+                  {requestsError ? (
+                    <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                      {requestsError}
+                    </div>
+                  ) : null}
+
+                  {filteredRequests.length ? (
+                    <div className="grid gap-4">
+                      {filteredRequests.map((request) => {
+                        const status = getUiStatus(request);
+
+                        return (
+                          <button
+                            key={request.case_id}
+                            type="button"
+                            onClick={() => onSelectRequest(request)}
+                            className="rounded-3xl border border-slate-100 bg-white p-5 text-left transition hover:border-slate-200 hover:bg-slate-50/80"
+                          >
+                            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                              <div className="grid flex-1 gap-4 md:grid-cols-2">
+                                <div>
+                                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                                    Reservation ID
+                                  </div>
+                                  <div className="mt-2 break-all font-mono text-sm text-slate-900">
+                                    {request.patient_hash || request.case_id}
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                                    Reservation date
+                                  </div>
+                                  <div className="mt-2 text-sm font-medium text-slate-900">
+                                    {formatDateTime(request.created_at)}
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                                    Appointment time
+                                  </div>
+                                  <div className="mt-2 text-sm font-medium text-slate-900">
+                                    {formatDateTime(request.slot_datetime)}
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                                    Clinic
+                                  </div>
+                                  <div className="mt-2 text-sm font-medium text-slate-900">
+                                    {request.clinic_name || "Clinic unavailable"}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex flex-wrap items-center gap-3">
+                                <span
+                                  className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${getBadgeClasses(
+                                    status
+                                  )}`}
+                                >
+                                  {formatOperationStatusLabel(status)}
+                                </span>
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500">
+                      No requests available for this filter yet.
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+          </>
+        ) : null}
       </div>
     </main>
   );

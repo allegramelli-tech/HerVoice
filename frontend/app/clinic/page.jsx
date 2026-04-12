@@ -66,6 +66,7 @@ export default function ClinicPage() {
   const [slotError, setSlotError] = useState("");
   const [slotSuccess, setSlotSuccess] = useState("");
   const [isCreatingSlot, setIsCreatingSlot] = useState(false);
+  const [deletingSlotId, setDeletingSlotId] = useState("");
   const [verification, setVerification] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [actionError, setActionError] = useState("");
@@ -272,8 +273,48 @@ export default function ClinicPage() {
     }
   }
 
+  async function handleDeleteSlot(slotId) {
+    setSlotError("");
+    setSlotSuccess("");
+
+    if (!selectedClinicId || !slotId) {
+      setSlotError("Choose a valid slot before deleting it.");
+      return;
+    }
+
+    setDeletingSlotId(slotId);
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/clinics/${selectedClinicId}/slots/${slotId}`,
+        {
+          method: "DELETE",
+        }
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(getApiError(data, "Unable to delete this time slot."));
+      }
+
+      setSlotSuccess(data.message || "Time slot deleted successfully.");
+      await Promise.all([loadClinics(), loadRequests()]);
+    } catch (error) {
+      setSlotError(error.message || "Unable to delete this time slot.");
+    } finally {
+      setDeletingSlotId("");
+    }
+  }
+
   function handleSelectRequest(request) {
     setSelectedRequestId(request.case_id);
+    setVerification(null);
+    setActionError("");
+    setVerificationFields(INITIAL_VERIFICATION_FIELDS);
+  }
+
+  function handleCloseVerification() {
+    setSelectedRequestId("");
     setVerification(null);
     setActionError("");
     setVerificationFields(INITIAL_VERIFICATION_FIELDS);
@@ -362,6 +403,7 @@ export default function ClinicPage() {
         setSlotDateTime("");
         setSlotError("");
         setSlotSuccess("");
+        setDeletingSlotId("");
         setVerification(null);
         setActionError("");
         setRequestFilter("all");
@@ -379,6 +421,8 @@ export default function ClinicPage() {
       onSlotDateTimeChange={setSlotDateTime}
       onCreateSlot={handleCreateSlot}
       isCreatingSlot={isCreatingSlot}
+      onDeleteSlot={handleDeleteSlot}
+      deletingSlotId={deletingSlotId}
       slotError={slotError}
       slotSuccess={slotSuccess}
       incomingRequests={incomingRequests}
@@ -390,6 +434,7 @@ export default function ClinicPage() {
       verificationFields={verificationFields}
       onVerificationFieldChange={handleVerificationFieldChange}
       onVerify={handleVerify}
+      onCloseVerification={handleCloseVerification}
       isVerifying={isVerifying}
       actionError={actionError}
       verification={verification}

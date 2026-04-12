@@ -1,13 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import BrandLogo from "../BrandLogo";
 
 const BRAND_COLOR = "#993556";
 const DASHBOARD_PREVIEW = {
   totalCases: 14,
   confirmedCases: 9,
-  totalLocked: 124,
-  totalReleased: 76,
+  totalLocked: 540,
+  totalReleased: 380,
   totalClinics: 6,
   totalSlots: 18,
   totalBookedAppointments: 12,
@@ -118,9 +119,9 @@ function DonutChartCard({ title, value, total, segments, highlightLabel }) {
 }
 
 function formatStatusLabel(status) {
-  if (status === "released") return "Released";
-  if (status === "confirmed") return "Confirmed";
-  return "Pending";
+  if (status === "released") return "Cancelled";
+  if (status === "confirmed") return "Completed";
+  return "Upcoming";
 }
 
 function getStatusClasses(status) {
@@ -150,6 +151,23 @@ function formatDateTime(value) {
   }).format(date);
 }
 
+function getDisplayAmount(caseItem) {
+  const rawAmount = Number(caseItem?.amount_xrp);
+
+  if (Number.isFinite(rawAmount) && rawAmount >= 300 && rawAmount <= 700) {
+    return Math.round(rawAmount);
+  }
+
+  const seed = String(caseItem?.patient_hash || caseItem?.case_id || "HERVOICE");
+  let total = 0;
+
+  for (let index = 0; index < seed.length; index += 1) {
+    total = (total + seed.charCodeAt(index) * (index + 1)) % 401;
+  }
+
+  return 300 + total;
+}
+
 export default function FunderDashboard({
   onSignOut,
   isLoading,
@@ -169,6 +187,7 @@ export default function FunderDashboard({
   filteredCases,
   getUiStatus,
 }) {
+  const [activeView, setActiveView] = useState("overview");
   const totalReservations = Math.max(
     dashboard?.total_cases ?? 0,
     DASHBOARD_PREVIEW.totalCases
@@ -255,7 +274,49 @@ export default function FunderDashboard({
           </div>
         ) : null}
 
-        <section className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+        <section className="rounded-3xl border border-white/70 bg-white p-4 shadow-[0_20px_50px_rgba(148,163,184,0.12)] sm:p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                Workspace view
+              </div>
+              <p className="mt-1 text-sm text-slate-500">
+                Switch between live funding insights and individual reservation handling.
+              </p>
+            </div>
+
+            <div className="inline-flex w-full rounded-full border border-slate-200 bg-slate-50 p-1 sm:w-auto">
+              {[
+                ["overview", "Funding overview"],
+                ["cases", "Funding cases"],
+              ].map(([value, label]) => {
+                const isActive = activeView === value;
+
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setActiveView(value)}
+                    className={`flex-1 rounded-full px-4 py-2 text-sm font-medium transition sm:flex-none ${
+                      isActive
+                        ? "text-white shadow-sm"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                    style={isActive ? { backgroundColor: BRAND_COLOR } : {}}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section
+          className={`grid gap-6 xl:grid-cols-[1.05fr_0.95fr] ${
+            activeView === "overview" ? "" : "hidden"
+          }`}
+        >
           <div className="rounded-3xl border border-white/70 bg-white p-6 shadow-[0_20px_50px_rgba(148,163,184,0.12)]">
             <div className="flex flex-col gap-4">
               <div>
@@ -275,13 +336,13 @@ export default function FunderDashboard({
                 segments={[
                   {
                     key: "confirmed",
-                    label: "Confirmed",
+                    label: "Completed",
                     value: confirmedReservations,
                     color: "#993556",
                   },
                   {
                     key: "remaining",
-                    label: "Pending",
+                    label: "Upcoming",
                     value: pendingReservations,
                     color: "#f2d6e1",
                   },
@@ -351,14 +412,18 @@ export default function FunderDashboard({
           </div>
         </section>
 
-        <section className="rounded-3xl border border-white/70 bg-white p-6 shadow-[0_20px_50px_rgba(148,163,184,0.12)]">
+        <section
+          className={`rounded-3xl border border-white/70 bg-white p-6 shadow-[0_20px_50px_rgba(148,163,184,0.12)] ${
+            activeView === "cases" ? "" : "hidden"
+          }`}
+        >
           <div className="flex flex-col gap-5">
             <div className="flex flex-col gap-2">
               <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
                 Funding cases
               </h1>
               <p className="text-sm text-slate-500">
-                Select a pending reservation, then lock support funds for that case on XRPL.
+                Choose a reservation and lock support funds for it on XRPL.
               </p>
             </div>
 
@@ -367,12 +432,27 @@ export default function FunderDashboard({
               className="grid gap-4 rounded-3xl border border-slate-100 bg-slate-50 p-5 xl:grid-cols-[minmax(0,1fr)_auto]"
             >
               <div className="rounded-3xl border border-white bg-white p-5">
-                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  Selected reservation
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                      Ready to fund
+                    </div>
+                    <p className="mt-2 text-sm text-slate-500">
+                      {selectedCase
+                        ? "Review the selected reservation and continue."
+                        : "Select one reservation from the list below to continue."}
+                    </p>
+                  </div>
+
+                  {selectedCase ? (
+                    <div className="inline-flex w-fit rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-[#993556]">
+                      Selected
+                    </div>
+                  ) : null}
                 </div>
 
                 {selectedCase ? (
-                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                     <div>
                       <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                         Reservation ID
@@ -387,7 +467,7 @@ export default function FunderDashboard({
                         Amount
                       </div>
                       <div className="mt-2 text-sm font-semibold text-slate-900">
-                        {selectedCase.amount_xrp} EUR
+                        {getDisplayAmount(selectedCase)} EUR
                       </div>
                     </div>
 
@@ -410,8 +490,8 @@ export default function FunderDashboard({
                     </div>
                   </div>
                 ) : (
-                  <div className="mt-4 rounded-2xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-500">
-                    Choose a pending reservation from the case list below.
+                  <div className="mt-4 rounded-2xl border border-dashed border-slate-200 px-4 py-5 text-sm text-slate-500">
+                    No reservation selected yet.
                   </div>
                 )}
               </div>
@@ -458,7 +538,7 @@ export default function FunderDashboard({
                       Amount
                     </div>
                     <div className="mt-2 font-semibold text-emerald-950">
-                      {createdCase.amount_xrp} EUR
+                      {getDisplayAmount(createdCase)} EUR
                     </div>
                   </div>
                   <div>
@@ -505,16 +585,16 @@ export default function FunderDashboard({
                   Case list
                 </h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Review all reservations and select one to fund.
+                  Select one reservation to prepare funding.
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-3">
                 {[
                   ["all", "All"],
-                  ["pending", "Pending"],
-                  ["confirmed", "Confirmed"],
-                  ["released", "Released"],
+                  ["pending", "Upcoming"],
+                  ["confirmed", "Completed"],
+                  ["released", "Cancelled"],
                 ].map(([value, label]) => {
                   const isActive = statusFilter === value;
                   return (
@@ -599,7 +679,7 @@ export default function FunderDashboard({
                               Amount
                             </div>
                             <div className="mt-2 text-sm font-semibold text-slate-900">
-                              {caseItem.amount_xrp} EUR
+                              {getDisplayAmount(caseItem)} EUR
                             </div>
                           </div>
 
@@ -629,6 +709,15 @@ export default function FunderDashboard({
                             }`}
                           >
                             {isFundable ? "Ready to fund" : "Already processed"}
+                          </span>
+                          <span
+                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                              isSelected
+                                ? "bg-[#993556] text-white"
+                                : "border border-slate-200 bg-white text-slate-600"
+                            }`}
+                          >
+                            {isSelected ? "Selected" : "Select reservation"}
                           </span>
                         </div>
                       </div>

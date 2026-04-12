@@ -88,6 +88,21 @@ def create_slot(clinic_id: str, slot_datetime: datetime, db: Session) -> ClinicS
     return slot
 
 
+def delete_slot(clinic_id: str, slot_id: str, db: Session) -> None:
+    slot = db.query(ClinicSlot).filter(ClinicSlot.id == slot_id).first()
+    if not slot:
+        raise ValueError("Slot not found")
+
+    if slot.clinic_id != clinic_id:
+        raise ValueError("Slot does not belong to this clinic")
+
+    if slot.status != SlotStatus.AVAILABLE:
+        raise ValueError(f"Only available slots can be deleted (status: {slot.status})")
+
+    db.delete(slot)
+    db.commit()
+
+
 def list_clinics_with_available_slots(db: Session) -> list[Clinic]:
     return db.query(Clinic).all()
 
