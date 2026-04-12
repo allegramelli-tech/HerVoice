@@ -55,7 +55,7 @@ export default function ReservationVerification({
                 Reservation ID
               </div>
               <div className="mt-2 break-all font-mono text-sm text-slate-900">
-                {selectedRequest.case_id}
+                {selectedRequest.patient_hash || selectedRequest.case_id}
               </div>
             </div>
 
@@ -65,6 +65,24 @@ export default function ReservationVerification({
               </div>
               <div className="mt-2 text-sm font-medium text-slate-900">
                 {formatDateTime(selectedRequest.created_at)}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">
+                Appointment time
+              </div>
+              <div className="mt-2 text-sm font-medium text-slate-900">
+                {formatDateTime(selectedRequest.slot_datetime)}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">
+                Clinic
+              </div>
+              <div className="mt-2 text-sm font-medium text-slate-900">
+                {selectedRequest.clinic_name || "Clinic unavailable"}
               </div>
             </div>
           </div>
@@ -143,12 +161,12 @@ export default function ReservationVerification({
               </h2>
               <span
                 className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${
-                  verification.valid
+                  verification.matched
                     ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                     : "border-rose-200 bg-rose-50 text-rose-700"
                 }`}
               >
-                {verification.valid ? "Valid" : "Invalid"}
+                {verification.matched ? "Matched" : "No match"}
               </span>
             </div>
 
@@ -158,23 +176,23 @@ export default function ReservationVerification({
                   Reservation ID
                 </div>
                 <div className="mt-2 break-all font-mono text-slate-900">
-                  {selectedRequest.case_id}
+                  {selectedRequest.patient_hash || selectedRequest.case_id}
                 </div>
               </div>
               <div>
                 <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  Status
+                  Case ID
                 </div>
-                <div className="mt-2 font-medium capitalize text-slate-900">
-                  {verification.status || "Unavailable"}
+                <div className="mt-2 break-all font-mono text-slate-900">
+                  {verification.case_id || "Unavailable"}
                 </div>
               </div>
               <div>
                 <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  Reservation date
+                  Appointment ID
                 </div>
-                <div className="mt-2 font-medium text-slate-900">
-                  {formatDateTime(selectedRequest.created_at)}
+                <div className="mt-2 break-all font-mono text-slate-900">
+                  {verification.appointment_id || "Unavailable"}
                 </div>
               </div>
               <div>
@@ -183,6 +201,14 @@ export default function ReservationVerification({
                 </div>
                 <div className="mt-2 font-medium text-slate-900">
                   {verification.amount_xrp ?? "-"} EUR
+                </div>
+              </div>
+              <div className="sm:col-span-2">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  Release transaction
+                </div>
+                <div className="mt-2 break-all font-mono text-slate-900">
+                  {verification.tx_hash || "Not released"}
                 </div>
               </div>
             </div>

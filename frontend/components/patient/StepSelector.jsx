@@ -7,7 +7,7 @@ const OPTIONS = [
     id: "accesscode",
     title: "I already have an access code",
     description:
-      "Open your existing case, check your status, and continue where you left off.",
+      "Get help with an existing case or switch to a new request in the current beta.",
   },
   {
     id: "support",
