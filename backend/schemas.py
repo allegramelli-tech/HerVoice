@@ -160,3 +160,16 @@ class DashboardResponse(BaseModel):
     total_booked_appointments: int
     total_completed_appointments: int
     cases: List[DashboardCase]
+
+class CaseStatusAppointmentInfo(BaseModel):
+    appointment_id: str
+    clinic_name: str
+    clinic_address: str
+    slot_datetime: datetime
+    status: AppointmentStatus
+
+
+class PatientCaseStatusResponse(BaseModel):
+    case_id: str
+    status: CaseStatus
+    appointment: Optional[CaseStatusAppointmentInfo] = None
