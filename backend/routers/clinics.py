@@ -15,7 +15,8 @@ from services.case_service import (
     delete_slot,
     list_clinics_with_available_slots,
 )
-from models import SlotStatus
+
+# Gérer l'action métier, vérifier l'identité et libérer le paiement
 
 router = APIRouter(prefix="/api/clinics", tags=["clinics"])
 
@@ -83,7 +84,6 @@ def get_clinics(db: Session = Depends(get_db)):
                 status=slot.status,
             )
             for slot in clinic.slots
-            if slot.status == SlotStatus.AVAILABLE
         ]
 
         result.append(

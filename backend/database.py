@@ -2,7 +2,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from config import DATABASE_URL
 
-engine_kwargs = {}
+engine_kwargs = {
+    "pool_pre_ping": True,
+    "pool_recycle": 300,
+}
 
 if DATABASE_URL.startswith("sqlite"):
     engine_kwargs["connect_args"] = {"check_same_thread": False}

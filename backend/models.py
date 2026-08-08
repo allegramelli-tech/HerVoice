@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Enum as SAEnum
+from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Enum as SAEnum, Index
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 import uuid
@@ -6,7 +6,8 @@ import enum
 
 from database import Base
 
-
+# La machine à états empêche les transitions incohérentes.
+# Chaque état définit clairement ce qui est permis et ce qui l'est pas
 class CaseStatus(str, enum.Enum):
     PENDING = "pending"       # case created, waiting for funder escrow
     ACTIVE = "active"         # escrow confirmed, waiting for patient arrival
@@ -44,6 +45,14 @@ class Clinic(Base):
 
 class ClinicSlot(Base):
     __tablename__ = "clinic_slots"
+    __table_args__ = (
+        Index(
+            "ix_clinic_slots_clinic_status_datetime",
+            "clinic_id",
+            "status",
+            "slot_datetime",
+        ),
+    )
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     clinic_id = Column(String, ForeignKey("clinics.id"), nullable=False)

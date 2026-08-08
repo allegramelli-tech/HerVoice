@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from datetime import datetime, timezone
 from typing import Optional
 import random
@@ -104,7 +104,15 @@ def delete_slot(clinic_id: str, slot_id: str, db: Session) -> None:
 
 
 def list_clinics_with_available_slots(db: Session) -> list[Clinic]:
-    return db.query(Clinic).all()
+    return (
+        db.query(Clinic)
+        .options(
+            selectinload(
+                Clinic.slots.and_(ClinicSlot.status == SlotStatus.AVAILABLE)
+            )
+        )
+        .all()
+    )
 
 
 # --------------------
@@ -122,6 +130,7 @@ def create_case_with_appointment(
     db: Session,
 ) -> tuple[FundingCase, Appointment]:
     patient_hash = compute_patient_hash(name, date_of_birth, insurance_number)
+# Les données brutes ne sont jamais persistées.
 
     existing_active = db.query(FundingCase).filter(
         FundingCase.patient_hash == patient_hash,
@@ -338,6 +347,7 @@ def verify_and_release(
             "message": f"Appointment is not eligible for release (status: {appointment.status}).",
         }
 
+    # si une transition échouée côté XRPL -> message ERREUR et cas reste en ACTIVE
     try:
         result = finish_escrow(
             funder_address=case.funder_address,

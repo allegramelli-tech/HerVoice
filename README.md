@@ -300,6 +300,10 @@ pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
+The API does not create or alter database tables at startup. Run schema
+migrations, including `backend/migrations/001_add_clinic_slots_lookup_index.sql`,
+as a deployment step before starting Uvicorn.
+
 ### 2. Frontend
 
 Create `frontend/.env.local`:

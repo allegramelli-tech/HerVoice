@@ -1,10 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from database import engine, Base
 from routers import clinics, cases, appointments, fund, clinic, dashboard
 
-Base.metadata.create_all(bind=engine)
+# Database schema migrations must run as a deployment step before the API starts.
 
 app = FastAPI(
     title="HerVoice API",
@@ -12,6 +11,7 @@ app = FastAPI(
     version="3.5.0",
 )
 
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

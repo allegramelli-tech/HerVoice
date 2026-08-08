@@ -5,6 +5,8 @@ from database import get_db
 from schemas import VerifyAndReleaseRequest, VerifyAndReleaseResponse
 from services.case_service import verify_and_release
 
+# Administration - créer, lister
+
 router = APIRouter(prefix="/api/clinic", tags=["clinic"])
 
 @router.post("/verify-and-release", response_model=VerifyAndReleaseResponse)
